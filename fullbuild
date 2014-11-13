@@ -1,0 +1,6 @@
+#!/bin/sh
+#fullbuild
+clean.sh
+build.sh
+iso.sh
+qemu.sh

@@ -7,10 +7,10 @@ mkdir -p isodir/boot
 mkdir -p isodir/boot/grub
 
 cp grub/efi.img isodir/efi.img
-cp sysroot/boot/myos.kernel isodir/boot/myos.kernel
+cp sysroot/boot/dosdos.kernel isodir/boot/dosdos.kernel
 cat > isodir/boot/grub/grub.cfg << EOF
-menuentry "myos" {
-	multiboot /boot/myos.kernel
+menuentry "dosdos" {
+	multiboot /boot/dosdos.kernel
 }
 EOF
-grub-mkrescue -o myos.iso isodir
+grub-mkrescue -o dosdos.iso isodir
