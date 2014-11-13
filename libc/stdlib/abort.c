@@ -23,7 +23,7 @@ __attribute__((__noreturn__))
 void abort(void)
 {
 	// TODO: Add proper kernel panic.
-	printf("Kernel Panic: abort()\n");
+  printf("Kernel Panic: Abort()\n");
 	while ( 1 ) { }
 	__builtin_unreachable();
 }
