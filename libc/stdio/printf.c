@@ -109,10 +109,9 @@ int printf(const char* restrict format, ...)
 
 int print_anyhex(const char sizeof_ptr, const unsigned long cast_ptr){
   int siz = 2 * sizeof_ptr;
-  printf("%d\n",siz);
-  return 2;
-  printf("0x");
 
+  printf("0x");
+  
   for(int i = 0; i < siz; ++i){
     unsigned long copy = cast_ptr;
     copy = copy << (4 * i);	
