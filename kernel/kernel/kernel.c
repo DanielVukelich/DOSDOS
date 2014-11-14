@@ -19,18 +19,20 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <kernel/tty.h>
 #include <kernel/cursor.h>
 
 void kernel_early(void)
 {
-	terminal_initialize();
+  terminal_initialize();
 }
 
 void kernel_main(void)
 {
-  cursor_setpos(-1,-1);
+  cursor_hide();
+  
   int i = printf("Hello, world!");
   printf("\n%d characters were printed\n",i);
   abort();

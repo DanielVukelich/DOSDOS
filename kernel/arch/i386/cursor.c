@@ -16,22 +16,61 @@
 */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <kernel/dos.h>
 
-void cursor_setpos(unsigned short x, unsigned short y);
+const unsigned short CRTC_ADDR = 0x3D4;
 
-void cursor_setpos(unsigned short x, unsigned short y){
-  
-  unsigned short crtc_adr = 0x3D4; /* 0x3B4 for monochrome */
+bool cursor_setpos(unsigned short x, unsigned short y);
+bool cursor_toggle();
+bool cursor_ishidden();
 
-  unsigned short offset = x + y * 80;
-  outb(crtc_adr + 0, 14);
-  outb(crtc_adr + 1, offset >> 8);
-  outb(crtc_adr + 0, 15);
-  outb(crtc_adr + 1, offset);
+void cursor_hide();
+void cursor_show();
 
+bool cursorhidden = false;
+
+bool cursor_ishidden(){
+  return cursorhidden;
+}
+
+bool cursor_toggle(){
+  if(cursorhidden)
+    cursor_show();
+  else
+    cursor_hide();
+
+  return cursorhidden;
+}
+
+void cursor_hide(){
+  outb(CRTC_ADDR + 0, 0x0A);
+  outb(CRTC_ADDR + 1, 0x2F);
+  outb(CRTC_ADDR + 0, 0x0B);
+  outb(CRTC_ADDR + 1, 0x0F);
+  cursorhidden = true;
   return;
+}
+
+void cursor_show(){
+  outb(CRTC_ADDR + 0, 0x0A);
+  outb(CRTC_ADDR + 1, 0x0F);
+  outb(CRTC_ADDR + 0, 0x0B);
+  outb(CRTC_ADDR + 1, 0x0F);
+  cursorhidden = false;
+  return;
+}
+
+bool cursor_setpos(unsigned short x, unsigned short y){
+  
+  unsigned short offset = x + y * 80;
+  outb(CRTC_ADDR + 0, 14);
+  outb(CRTC_ADDR + 1, offset >> 8);
+  outb(CRTC_ADDR + 0, 15);
+  outb(CRTC_ADDR + 1, offset);
+
+  return cursorhidden;
 }
 
 
