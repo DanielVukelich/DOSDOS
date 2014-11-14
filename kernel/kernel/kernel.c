@@ -29,8 +29,8 @@ void kernel_early(void)
 
 void kernel_main(void)
 {
-  void* ptr = 0xDEADBEEF;
-  printf("Our pointer is of size: %d bytes\n",sizeof(ptr));
-  printf("It points to address: %p\n",ptr);
+  char c = 'g';
+  int i = printf("Hello, %c\n",c);
+  printf("\n%d characters were printed\n",i);
   abort();
 }

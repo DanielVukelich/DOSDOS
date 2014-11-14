@@ -26,8 +26,8 @@
 
 const char* NUMBER_LIST = "0123456789ABCDEF";
 
-void print_int(const int*);
-void print_voidptr(const void*);
+int print_int(const int);
+int print_anyhex(const char, const unsigned long);
 
 static void print(const char* data, size_t data_length)
 {
@@ -77,22 +77,24 @@ int printf(const char* restrict format, ...)
 	format++;
 	char c = (char) va_arg(parameters, int);
 	print(&c, sizeof(c));
+	written++;
       }
       else if ( *format == 's' )
       {
 	format++;
 	const char* s = va_arg(parameters, const char*);
 	print(s, strlen(s));
+	written += strlen(s);
       }
       else if( *format == 'p'){
 	format++;
 	const void* p = va_arg(parameters, const void*);
-	print_voidptr(p);
+	written += print_anyhex(sizeof(p), (unsigned long) p);
       }
       else if( *format == 'd' || *format == 'i'){
 	format++;
 	const int i = va_arg(parameters, const int);
-	print_int(i);
+	written += print_int(i);
       }
       else
       {
@@ -105,27 +107,33 @@ int printf(const char* restrict format, ...)
   return written;
 }
 
-void print_voidptr(const void* p){
-  const char siz = 2 * sizeof(void*);
-		
+int print_anyhex(const char sizeof_ptr, const unsigned long cast_ptr){
+  int siz = 2 * sizeof_ptr;
+  printf("%d\n",siz);
+  return 2;
   printf("0x");
-	
-  for(char i = 0; i < siz; ++i){
-    unsigned int copy = (unsigned int)p;
+
+  for(int i = 0; i < siz; ++i){
+    unsigned long copy = cast_ptr;
     copy = copy << (4 * i);	
     copy = (copy >> (4 * (siz - (i + 1)) + (4 * i)  )) % 16;
     char hex = NUMBER_LIST[copy];
     print(&hex,sizeof(hex));
   }
+  
+  return (2 + siz);
 }
 
-void print_int(const int* val){
+int print_int(const int val){
+
   int copy = val;
+  int toreturn = 0;
 	
   if(copy < 0){
     copy *= -1;
     char neg = '-';
     print(&neg, sizeof(neg));
+    toreturn++;
   }
 
   //How many digits will we print?
@@ -137,9 +145,12 @@ void print_int(const int* val){
   if(baseten == 0){
     char zero = '0';
     print(&zero, sizeof(zero));
+    toreturn = 1;
   }
   
   for(baseten; baseten > 0; --baseten){
+
+   toreturn++;
     
     int maskone = 1;
     //Maskone will be 10^baseten
@@ -155,4 +166,6 @@ void print_int(const int* val){
     print(&digit, sizeof(digit));
     copy =  copy - (maskone * masktwo);
   }
+
+  return toreturn;
 }
