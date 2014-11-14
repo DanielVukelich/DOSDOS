@@ -15,23 +15,12 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#ifndef _KERNEL_DOS_H
+#define _KERNEL_DOS_H
 
-#include <kernel/tty.h>
-#include <kernel/cursor.h>
-
-void kernel_early(void)
+static inline void outb(uint16_t port, uint8_t val)
 {
-	terminal_initialize();
+    asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
 }
 
-void kernel_main(void)
-{
-  cursor_setpos(-1,-1);
-  int i = printf("Hello, world!");
-  printf("\n%d characters were printed\n",i);
-  abort();
-}
+#endif

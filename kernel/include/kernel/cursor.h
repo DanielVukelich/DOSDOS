@@ -15,23 +15,9 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#ifndef _KERNEL_CURSOR_H
+#define _KERNEL_CURSOR_H
 
-#include <kernel/tty.h>
-#include <kernel/cursor.h>
+void cursor_setpos(unsigned short x, unsigned short y);
 
-void kernel_early(void)
-{
-	terminal_initialize();
-}
-
-void kernel_main(void)
-{
-  cursor_setpos(-1,-1);
-  int i = printf("Hello, world!");
-  printf("\n%d characters were printed\n",i);
-  abort();
-}
+#endif

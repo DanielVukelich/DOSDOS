@@ -15,23 +15,23 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
-#include <stdio.h>
 
-#include <kernel/tty.h>
-#include <kernel/cursor.h>
+#include <kernel/dos.h>
 
-void kernel_early(void)
-{
-	terminal_initialize();
+void cursor_setpos(unsigned short x, unsigned short y);
+
+void cursor_setpos(unsigned short x, unsigned short y){
+  
+  unsigned short crtc_adr = 0x3D4; /* 0x3B4 for monochrome */
+
+  unsigned short offset = x + y * 80;
+  outb(crtc_adr + 0, 14);
+  outb(crtc_adr + 1, offset >> 8);
+  outb(crtc_adr + 0, 15);
+  outb(crtc_adr + 1, offset);
+
+  return;
 }
 
-void kernel_main(void)
-{
-  cursor_setpos(-1,-1);
-  int i = printf("Hello, world!");
-  printf("\n%d characters were printed\n",i);
-  abort();
-}
+
