@@ -15,30 +15,16 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
-#include <stdio.h>
-#include <stdbool.h>
 
-#include <kernel/tty.h>
-#include <kernel/cursor.h>
+const char* strchr(const char* str, int character){
 
-void kernel_early(void)
-{
-  terminal_initialize();
-}
+  for(char* i = 0; i != '\0'; ++i){
+    if(*i == (char) character)
+      return i;
+  }
 
-void kernel_main(void)
-{
-  cursor_hide();
-
-  char* str = "Hello, world!";
-  printf("%p\n", str);
-  char* lettere = strchr(str, '}');
-  printf("%p\n",lettere);
+  return NULL;
   
-  int i = printf("Hello, world!");
-  printf("\n%d characters were printed\n",i);
-  abort();
 }
+
