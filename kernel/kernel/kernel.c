@@ -23,22 +23,53 @@
 
 #include <kernel/tty.h>
 #include <kernel/cursor.h>
+#include <kernel/multiboot.h>
 
+extern uint32_t endkernel;
+memory_map_t* init_mmap(multiboot_info_t* mbt);
+   
 void kernel_early(void)
 {
   terminal_initialize();
 }
 
-void kernel_main(void)
+void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
 {
-  cursor_hide();
-
-  char* str = "Hello, world!";
-  printf("%p\n", str);
-  char* lettere = strchr(str, '}');
-  printf("%p\n",lettere);
   
-  int i = printf("Hello, world!");
-  printf("\n%d characters were printed\n",i);
+  init_mmap(mbt);
+  
+  cursor_hide();
   abort();
+}
+
+memory_map_t* init_mmap(multiboot_info_t* mbt){
+
+  unsigned long flags = (mbt->flags) >> 6;
+
+  if(!(flags % 2)){
+    printf("Multiboot memory map error");
+    return NULL;
+  }
+
+  unsigned long mmap_entries = mbt->mmap_length / sizeof(memory_map_t);
+  memory_map_t* mmap = mbt->mmap_addr;
+
+  printf("\n                   MEMORY MAP\n\n");
+  printf("Type |         Start         |         Length\n");
+  
+  for(int i = 0; i < mmap_entries; i++){
+    char type = mmap[i].type;
+    void* start = mmap[i].base_addr_low;
+    void* start_h = mmap[i].base_addr_high;
+    void* length = mmap[i].length_low;
+    void* length_h = mmap[i].length_high;
+
+    printf("%d    | %p:%p | %p:%p\n", type, start_h, start, length_h, length);
+    
+  }
+
+  printf("\n\n");
+
+  return mmap;
+  
 }
