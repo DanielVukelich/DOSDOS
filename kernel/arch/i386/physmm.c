@@ -17,10 +17,10 @@
 
 #include "kernel/physmm.h"
 
-void physmm_init_region(void* baseaddr, size_t size){
+void physmm_init_region(const void* baseaddr, size_t size){
 
-  uint32_t align = (uint32_t) baseaddr / BLOCK_SIZE;
-  int blocks = size / BLOCK_SIZE;
+  uint32_t align = (uint32_t) baseaddr / PHYSMM_BLOCK_SIZE;
+  int blocks = size / PHYSMM_BLOCK_SIZE;
 
   while(blocks > 0){
     mmap_bitunset(align++);
@@ -48,7 +48,7 @@ void* physmm_alloc_block(){
 
   mmap_bitset(pageframe);
 
-  uint32_t address = (pageframe * BLOCK_SIZE);
+  uint32_t address = (pageframe * PHYSMM_BLOCK_SIZE);
 
   ++mem_used_blocks;
 
@@ -68,7 +68,7 @@ void* physmm_alloc_blocks(size_t size){
   for(int i = 0; i < size; ++i)
   mmap_bitset(pageframe + i);
 
-  uint32_t address = (pageframe * BLOCK_SIZE);
+  uint32_t address = (pageframe * PHYSMM_BLOCK_SIZE);
 
   mem_used_blocks += size;
 
@@ -76,20 +76,20 @@ void* physmm_alloc_blocks(size_t size){
 
 }
 
-void physmm_free_block(void* p){
+void physmm_free_block(const void* p){
   
   uint32_t address = (uint32_t) p;
-  int pageframe = address / BLOCK_SIZE;
+  int pageframe = address / PHYSMM_BLOCK_SIZE;
 
   mmap_bitunset(pageframe);
   --mem_used_blocks;
   
 }
 
-void physmm_free_blocks(void* p, size_t size){
+void physmm_free_blocks(const void* p, size_t size){
 
   uint32_t address = (uint32_t) p;
-  int pageframe = address / BLOCK_SIZE;
+  int pageframe = address / PHYSMM_BLOCK_SIZE;
 
   for(size_t i = 0; i < size; ++i){
     mmap_bitunset(pageframe + i);
@@ -99,10 +99,10 @@ void physmm_free_blocks(void* p, size_t size){
   
 }
 
-void physmm_deinit_region(void* baseaddr, size_t size){
+void physmm_deinit_region(const void* baseaddr, size_t size){
 
-  uint32_t align = (uint32_t) baseaddr / BLOCK_SIZE;
-  int blocks = size / BLOCK_SIZE;
+  uint32_t align = (uint32_t) baseaddr / PHYSMM_BLOCK_SIZE;
+  unsigned int blocks = size / PHYSMM_BLOCK_SIZE;
 
   while(blocks > 0){
     mmap_bitset(align++);
@@ -117,29 +117,13 @@ void physmm_deinit_region(void* baseaddr, size_t size){
 size_t physmm_init(size_t memorysize, void* bitmap){
   mem_full_size_kb = memorysize;
   mem_bitmap = (uint32_t*) bitmap;
-  mem_full_size_blocks = (memorysize * 1024) / BLOCK_SIZE;
+  mem_full_size_blocks = (memorysize * 1024) / PHYSMM_BLOCK_SIZE;
 
   //Default to setting all of our memory as 'in use'
   mem_used_blocks = mmap_get_max_blocks();
   memset(mem_bitmap, 0xF, mmap_get_max_blocks() / BLOCKS_PER_BYTE);
 
   return (mmap_get_max_blocks() / BLOCKS_PER_BYTE);
-}
-
-inline uint32_t mmap_get_max_blocks(){
-  return mem_full_size_blocks;
-}
-
-inline void mmap_bitset(int bit){
-  mem_bitmap[bit /32] = mem_bitmap[bit / 32] | (1 << (bit % 32));
-}
-
-inline void mmap_bitunset(int bit){
-  mem_bitmap[bit / 32] = mem_bitmap[bit / 32] & ~(1 << (bit % 32));
-}
-
-inline bool mmap_checkstatus(int bit){
-  return mem_bitmap[bit / 32] & (1 << (bit % 32));
 }
 
 int mmap_first_free(){

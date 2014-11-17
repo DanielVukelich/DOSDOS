@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "kernel/multiboot.h"
 
@@ -29,7 +30,7 @@
 #define BLOCKS_PER_BYTE 8
 
 //Size in bytes of each block as well as block alignment
-#define BLOCK_SIZE 4096
+#define PHYSMM_BLOCK_SIZE 4096
 
 static uint32_t mem_used_blocks = 0;
 static uint32_t mem_full_size_kb = 0;
@@ -37,22 +38,32 @@ static uint32_t mem_full_size_blocks = 0;
 
 static uint32_t* mem_bitmap = 0;  //Pointer to our block bitmap
 
-inline void mmap_bitset(int bit);
-inline void mmap_bitunset(int bit);
-inline bool mmap_checkstatus(int bit);
-inline uint32_t mmap_get_max_blocks();
 int mmap_first_free();
 int mmap_first_free_s(size_t size);
 
-//Memorysize is taken in Kb
-//Return the size of the memory bitmap
-size_t physmm_init(size_t memorysize, void* bitmap);
-void physmm_init_region(void* baseaddr, size_t size);
-void physmm_deinit_region(void* baseaddr, size_t size);
-void physmm_free_block(void* p);
-void physmm_free_blocks(void* p, size_t size);
+size_t physmm_init(size_t memorysize_kb, void* bitmap);
+void physmm_init_region(const void* baseaddr, size_t size);
+void physmm_deinit_region(const void* baseaddr, size_t size);
+void physmm_free_block(const void* p);
+void physmm_free_blocks(const void* p, size_t size);
 void* physmm_alloc_block();
 void* physmm_alloc_blocks(size_t size);
 uint32_t physmm_freeblock_count();
+
+inline void mmap_bitset(int bit){
+  mem_bitmap[bit /32] = mem_bitmap[bit / 32] | (1 << (bit % 32));
+}
+
+inline void mmap_bitunset(int bit){
+  mem_bitmap[bit / 32] = mem_bitmap[bit / 32] & ~(1 << (bit % 32));
+}
+
+inline bool mmap_checkstatus(int bit){
+  return mem_bitmap[bit / 32] & (1 << (bit % 32));
+}
+
+inline uint32_t mmap_get_max_blocks(){
+  return mem_full_size_blocks;
+}
 
 #endif
