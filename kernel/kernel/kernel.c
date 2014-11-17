@@ -18,7 +18,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdbool.h>
 
 #include <kernel/tty.h>
