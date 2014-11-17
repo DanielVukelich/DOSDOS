@@ -65,7 +65,8 @@ void* physmm_alloc_blocks(size_t size){
   if(pageframe == -1)
     return 0;
 
-  mmap_bitset(pageframe);
+  for(int i = 0; i < size; ++i)
+  mmap_bitset(pageframe + i);
 
   uint32_t address = (pageframe * BLOCK_SIZE);
 
@@ -179,7 +180,7 @@ int mmap_first_free_s(size_t size){
 	  for (uint32_t count = 0; count <= size; ++count) {
 	    
 	    if (!mmap_checkstatus(startingBit + count) )
-	      ++free;	// this bit is clear (free frame)
+	      ++free;	// this bit is free
 	    
 	    if (free == size)
 	      return (i * 4 * 8 + j); //free count==size needed; return index

@@ -28,7 +28,7 @@
 
 extern uint32_t endkernel;
 
-static const  uint32_t* END_OF_KERNEL = (uint32_t*) (&endkernel + 1);
+static const  void* END_OF_KERNEL = (void*) (&endkernel + 2);
 static uint32_t* physmm_bitmap;
 
 static size_t physmm_bitmap_size;
@@ -44,42 +44,22 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
 {
   cursor_hide();
 
+  printf("Kernel loaded\n\n");
+  
   //Now initialize out physical memory manager
-  physmm_bitmap = END_OF_KERNEL;
+  physmm_bitmap = (uint32_t*) END_OF_KERNEL;
   physmm_bitmap_size = init_mmap(mbt);
   if(physmm_bitmap_size == 0){
     printf("Error initializing physical memory manager\n");
       abort();
   }
-
-  //A little test for out physical memory manager
-  printf("Free blocks: %d\n", physmm_freeblock_count());
-  void* block = physmm_alloc_block();
-  printf("Allocated 4Kib block at %p\n",  block);
-  size_t allocsiz = 4;
-  void* blocks = physmm_alloc_blocks(allocsiz);
-  printf("Allocated %dx4Kib blocks at %p\n", allocsiz, blocks);
-  printf("Free blocks: %d\n", physmm_freeblock_count());
-  physmm_free_block(block);
-  printf("Freed block at %p\n", block);
-  printf("Free blocks: %d\n", physmm_freeblock_count());
-  block = physmm_alloc_blocks(allocsiz);
-  printf("Allocated %dx4Kib blocks at %p\n", allocsiz, block);
-  printf("Free blocks: %d\n", physmm_freeblock_count());
-  physmm_free_blocks(blocks, allocsiz);
-  printf("Freed blocks at %p\n", blocks);
-  printf("Free blocks: %d\n", physmm_freeblock_count());
-  physmm_free_blocks(block, allocsiz);
-  printf("Freed blocks at %p\n", block);
-  printf("Free blocks: %d\n", physmm_freeblock_count());
-
   
   abort();
 }
 
 size_t init_mmap(multiboot_info_t* mbt){
 
-  printf("Initializing physical memory\n");
+  printf("Initializing physical memory...\n");
   
   unsigned long flags = (mbt->flags) >> 6;
 
@@ -124,7 +104,7 @@ size_t init_mmap(multiboot_info_t* mbt){
   }
 
   //Initialize the bitmap
-  size_t mmap_size = physmm_init(totmem, physmm_bitmap);
+  size_t mmap_size = physmm_init(totmem / 1024, physmm_bitmap);
 
   //Now, loop through and initialize only the regions that are addressable
   for(int i = 0; i <= last_addressable_index; ++i){
