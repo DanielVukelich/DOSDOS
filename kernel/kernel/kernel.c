@@ -27,8 +27,10 @@
 #include <kernel/physmm.h>
 
 extern uint32_t endkernel;
+extern uint32_t startkernel;
 
-static const  void* END_OF_KERNEL = (void*) (&endkernel + 2);
+static const void* END_OF_KERNEL = (void*) (&endkernel + 2);
+static const void* START_OF_KERNEL = (void*) (&startkernel);
 static uint32_t* physmm_bitmap;
 
 static size_t physmm_bitmap_size;
@@ -44,8 +46,8 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
 {
   cursor_hide();
 
-  printf("Kernel loaded\n\n");
-  
+  printf("Kernel loaded from %p to %p\n\n", START_OF_KERNEL, END_OF_KERNEL);
+
   //Now initialize out physical memory manager
   physmm_bitmap = (uint32_t*) END_OF_KERNEL;
   physmm_bitmap_size = init_mmap(mbt);
@@ -53,7 +55,7 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
     printf("Error initializing physical memory manager\n");
       abort();
   }
-  
+
   abort();
 }
 
@@ -131,6 +133,12 @@ size_t init_mmap(multiboot_info_t* mbt){
 
   }
 
+  //Lastly, deinit our kernel's space so that nobody tries to overwrite it
+  size_t kernelsize_rounded = (END_OF_KERNEL - START_OF_KERNEL);
+  kernelsize_rounded += (4096 - ((size_t) END_OF_KERNEL % 4096));
+
+  physmm_deinit_region(START_OF_KERNEL, kernelsize_rounded);
+  
   return mmap_size;
   
 }
