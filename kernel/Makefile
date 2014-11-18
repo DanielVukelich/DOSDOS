@@ -25,6 +25,7 @@ CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
 CPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
 LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
+NASMFLAGS:=-felf
 
 OBJS:=\
 $(KERNEL_ARCH_OBJS) \
@@ -59,6 +60,9 @@ dosdos.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
 
 %.o: %.S
 	$(CC) -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
+
+%.o: %.s
+	nasm $(NASMFLAGS) $<
 
 clean:
 	rm -f dosdos.kernel $(OBJS) $(ALL_OUR_OBJS) *.o */*.o */*/*.o

@@ -17,6 +17,83 @@
 
 #include "kernel/physmm.h"
 
+size_t init_mmap(multiboot_info_t* mbt, uint32_t* physmm_bitmap, const void* START_OF_KERNEL, const void* END_OF_KERNEL){
+
+  unsigned long flags = (mbt->flags) >> 6;
+
+  if(!(flags % 2)){
+    printf("Multiboot memory map error\n");
+    return 0;
+  }
+
+  unsigned long mmap_entries = mbt->mmap_length / sizeof(memory_map_t);
+  memory_map_t* mmap = mbt->mmap_addr;
+
+  unsigned long totmem = 0;
+  int last_addressable_index = -1;
+
+  //First, loop through to get the total amount of memory to play with
+  for(int i = 0; i < mmap_entries; i++){
+
+    unsigned long start = mmap[i].base_addr_low;
+    unsigned long start_h = mmap[i].base_addr_high;
+    unsigned long length = mmap[i].length_low;
+    unsigned long length_h = mmap[i].length_high;
+
+    //Only do stuff if the region is 32 bit addressable
+    if(start_h == 0 && length_h == 0){
+
+      
+      //If we are going to overshoot the addressable 32 bit range with a region,
+      //then truncate it
+      unsigned long maxu32 = 0xFFFFFFFF;
+      if( (start + length) < length)
+	length = maxu32 - start;
+
+      totmem += length;
+      last_addressable_index = i;
+    }
+    
+  }
+
+  if( last_addressable_index == -1){
+    printf("No memory regions are addressable by this operating system\n");
+    return 0;
+  }
+
+  //Initialize the bitmap
+  size_t mmap_size = physmm_init(totmem / 1024, physmm_bitmap);
+
+  //Now, loop through and initialize only the regions that are addressable
+  for(int i = 0; i <= last_addressable_index; ++i){
+
+    char type = mmap[i].type;
+    unsigned long start = mmap[i].base_addr_low;
+    unsigned long length = mmap[i].length_low;
+
+
+    //If we are going to overshoot the addressable 32 bit range with a region,
+    //then truncate it
+    unsigned long maxu32 = 0xFFFFFFFF;
+    if( (start + length) < length)
+      length = maxu32 - start;
+
+    //Now just initialize the region if it is type 1
+    if(type == 1)
+      physmm_init_region(start, length);
+
+  }
+
+  //Deinit our kernel's space so that nobody tries to overwrite it
+  size_t kernelsize_rounded = (END_OF_KERNEL - START_OF_KERNEL);
+  kernelsize_rounded += (4096 - ((size_t) END_OF_KERNEL % 4096));
+
+  physmm_deinit_region(START_OF_KERNEL, kernelsize_rounded);
+  
+  return mmap_size;
+  
+}
+
 void physmm_init_region(const void* baseaddr, size_t size){
 
   uint32_t align = (uint32_t) baseaddr / PHYSMM_BLOCK_SIZE;

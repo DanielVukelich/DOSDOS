@@ -41,6 +41,7 @@ static uint32_t* mem_bitmap = 0;  //Pointer to our block bitmap
 int mmap_first_free();
 int mmap_first_free_s(size_t size);
 
+size_t init_mmap(multiboot_info_t* mbt, uint32_t* physmm_bitmap, const void* START_OF_KERNEL, const void* END_OF_KERNEL);
 size_t physmm_init(size_t memorysize_kb, void* bitmap);
 void physmm_init_region(const void* baseaddr, size_t size);
 void physmm_deinit_region(const void* baseaddr, size_t size);
