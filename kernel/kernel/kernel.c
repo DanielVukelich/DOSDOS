@@ -61,6 +61,6 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   printf("Initializing IDT... ");
   idt_init();
   printf("Done\n");
-
+  
   while(1){}
 }

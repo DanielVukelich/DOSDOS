@@ -17,12 +17,9 @@
 
 #include <kernel/isr.h>
 
-int inters;
-
-void isr_handler(registers_t regs)
+void isr_handler(registers_t* regs)
 {  
-  printf("Received Interrupt %d:%p\n",regs.int_no, regs.err_code);
-  inters = 0;
+  printf("Received Interrupt %d:%p\n",regs->int_no, regs->err_code);
   return;
 }
 
