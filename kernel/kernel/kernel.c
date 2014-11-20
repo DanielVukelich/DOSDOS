@@ -25,6 +25,7 @@
 #include <kernel/multiboot.h>
 #include <kernel/physmm.h>
 #include <kernel/desc_tables.h>
+#include <kernel/isr.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;
@@ -56,5 +57,10 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   printf("Initializing GDT... ");
   gdt_init();
   printf("Done\n");
+
+  printf("Initializing IDT... ");
+  idt_init();
+  printf("Done\n");
+
   while(1){}
 }
