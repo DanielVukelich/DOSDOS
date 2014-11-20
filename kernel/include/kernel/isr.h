@@ -21,6 +21,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
+
+#include <kernel/tty.h>
 
 struct registers{
   uint32_t gs, fs, es, ds;

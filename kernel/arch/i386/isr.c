@@ -14,12 +14,77 @@
 *    You should have received a copy of the GNU General Public License
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include <kernel/isr.h>
+
+static bool isFatal(uint32_t interrupt){
+  return (interrupt != 14);
+}
+
+static char* interrupt_name(uint32_t intr){
+  switch(intr){
+  case 0:
+    return "DIVIDE-BY-ZERO";
+  case 1:
+    return "DEBUG";
+  case 2:
+    return "NON-MASKABLE INTERRUPT";
+  case 3:
+    return "BREAKPOINT";
+  case 4:
+    return "OVERFLOW";
+  case 5:
+    return "BOUND RANGE EXCEEDED";
+  case 6:
+    return "INVALID OPCODE";
+  case 7:
+    return "DEVICE NOT AVAILABLE";
+  case 8:
+    return "DOUBLE FAULT";
+  case 9:
+    return "COPROCESSOR SEGMENT OVERRUN";
+  case 10:
+    return "INVALID TSS";
+  case 11:
+    return "SEGMENT NOT PRESENT";
+  case 12:
+    return "STACK-SEGMENT FAULT";
+  case 13:
+    return "GENERAL PROTECTION FAULT";
+  case 14:
+    return "PAGE FAULT";
+  case 16:
+    return "x87 FLOATING-POINT EXCEPTION";
+  case 17:
+    return "ALIGNMENT CHECK";
+  case 18:
+    return "MACHINE CHECK";
+  case 19:
+    return "SIMD FLOATING-POINT EXCEPTION";
+  case 20:
+    return "VIRTUALIZATION EXCEPTION";
+  case 30:
+    return "SECURITY EXCEPTION";
+  default:
+    return "UNKNOWN EXCEPTION";
+  }
+}
 
 void isr_handler(registers_t* regs)
 {  
-  printf("Received Interrupt %d:%p\n",regs->int_no, regs->err_code);
+  if(isFatal(regs->int_no)){
+
+    terminal_bluescreen();
+    char* name = interrupt_name(regs->int_no);
+
+    printf("\t\t\t\t\tSOMETHING JUST WENT VERY WRONG\n\nI'd like to interject");
+    printf(" for a moment.  What you're referring to as:\n");
+    printf("\n\tInterrupt %d\n\nIs in fact, a fatal exception, ", regs->int_no);
+    printf("or as I've recently taken to  calling it:\n\n");
+    printf("\t%s with error code %p\n", name, regs->err_code);
+    
+    //Halt the machine
+    while(1);
+  }
   return;
 }
 

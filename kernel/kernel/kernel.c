@@ -61,6 +61,13 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   printf("Initializing IDT... ");
   idt_init();
   printf("Done\n");
+
+
+  //Simulate an exception that we want to be fatal
+  int i = 0;
+  i++;
+  int j = 10;
+  endkernel =  j/(i - 1);
   
   while(1){}
 }
