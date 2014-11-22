@@ -25,6 +25,7 @@
 
 #include <kernel/tty.h>
 #include <kernel/pic.h>
+#include <kernel/dos.h>
 
 struct registers{
   uint32_t gs, fs, es, ds;

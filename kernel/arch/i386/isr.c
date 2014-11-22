@@ -17,8 +17,7 @@
 #include <kernel/isr.h>
 
 static bool isFatal(uint32_t interrupt){
-  //return (interrupt != 14);
-  return false;
+  return (interrupt != 14);
 }
 
 static char* interrupt_name(uint32_t intr){
@@ -70,16 +69,21 @@ static char* interrupt_name(uint32_t intr){
   }
 }
 
+static void keyboard_interrupt(){
+  //Read the keyboard buffer to let the interrupt pass
+  inb(0x60);
+}
+
 void isr_handler(registers_t* regs)
 {  
-  if(isFatal(regs->int_no)){
+  if((regs->int_no < 32) && (isFatal(regs->int_no))){
 
     terminal_bluescreen();
     char* name = interrupt_name(regs->int_no);
 
-    printf("\t\t\t\t\tSOMETHING JUST WENT VERY WRONG\n\nI'd like to interject");
-    printf(" for a moment.  What you're referring to as:\n");
-    printf("\n\tInterrupt %d\n\nIs in fact, a fatal exception, ", regs->int_no);
+    printf("\t\t\t\t\t\tSOMETHING JUST WENT VERY WRONG\n\nI'd like to");
+    printf(" interject for a moment.  What you're referring to as:\n\n\t");
+    printf("Interrupt %d\n\nIs in fact, a fatal exception, ", regs->int_no);
     printf("or as I've recently taken to  calling it:\n\n");
     printf("\t%s with error code %p\n", name, regs->err_code);
     
@@ -87,9 +91,13 @@ void isr_handler(registers_t* regs)
     while(1);
     
   }
-  printf("%d:%p\n", regs->int_no, regs->err_code);
 
+  if(regs->int_no == 33){
+    keyboard_interrupt();
+  }
+  
   PIC_sendEOI(regs->int_no);
   return;
 }
+
 
