@@ -17,7 +17,8 @@
 #include <kernel/isr.h>
 
 static bool isFatal(uint32_t interrupt){
-  return (interrupt != 14);
+  //return (interrupt != 14);
+  return false;
 }
 
 static char* interrupt_name(uint32_t intr){
@@ -84,7 +85,11 @@ void isr_handler(registers_t* regs)
     
     //Halt the machine
     while(1);
+    
   }
+  printf("%d:%p\n", regs->int_no, regs->err_code);
+
+  PIC_sendEOI(regs->int_no);
   return;
 }
 

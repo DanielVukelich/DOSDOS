@@ -15,24 +15,23 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _KERNEL_ISR_H
-#define _KERNEL_ISR_H
+#ifndef _KERNEL_PIC_H
+#define _KERNEL_PIC_H
 
-#include <stdio.h>
 #include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
+#include <stdio.h>
 
-#include <kernel/tty.h>
-#include <kernel/pic.h>
+#include <kernel/dos.h>
 
-struct registers{
-  uint32_t gs, fs, es, ds;
-  uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
-  uint32_t int_no, err_code;
-  uint32_t eip, cs, eflags, useresp, ss;
-}typedef registers_t;
+void PIC_sendEOI(uint8_t irq);
+void PIC_remap(int offset1, int offset2);
 
-void isr_handler(registers_t* regs);
+void IRQ_set_mask(unsigned char IRQline);
+void IRQ_clear_mask(unsigned char IRQline);
+
+uint16_t pic_get_irr();
+uint16_t pic_get_isr();
+
+void enable_IRQ();
 
 #endif

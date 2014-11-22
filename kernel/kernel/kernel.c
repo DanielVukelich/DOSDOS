@@ -26,6 +26,7 @@
 #include <kernel/physmm.h>
 #include <kernel/desc_tables.h>
 #include <kernel/isr.h>
+#include <kernel/pic.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;
@@ -45,6 +46,10 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   cursor_hide();
   printf("Kernel loaded from %p to %p\n\n", START_OF_KERNEL, END_OF_KERNEL);
 
+  printf("Initializing PIC Interrupts... ");
+  PIC_remap(0x20, 0x28);
+  printf("Done\n");
+  
   printf("Initializing Physical Memory Manager... ");
   physmm_bitmap = (uint32_t*) END_OF_KERNEL;
   physmm_bitmap_size = init_mmap(mbt, physmm_bitmap, START_OF_KERNEL, END_OF_KERNEL);
@@ -62,12 +67,11 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   idt_init();
   printf("Done\n");
 
-
-  //Simulate an exception that we want to be fatal
-  int i = 0;
-  i++;
-  int j = 10;
-  endkernel =  j/(i - 1);
+  //Enable the keyboard irq
+  outb(0x21,0xfd);
+  outb(0xa1,0xff);
+  enable_IRQ();
   
+  uint32_t j = 0;
   while(1){}
 }
