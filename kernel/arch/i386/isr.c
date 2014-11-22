@@ -71,6 +71,7 @@ static char* interrupt_name(uint32_t intr){
 
 static void keyboard_interrupt(){
   //Read the keyboard buffer to let the interrupt pass
+  printf("Pressed a key ");
   inb(0x60);
 }
 
@@ -97,6 +98,7 @@ void isr_handler(registers_t* regs)
   }
   
   PIC_sendEOI(regs->int_no);
+  
   return;
 }
 

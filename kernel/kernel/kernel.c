@@ -68,9 +68,10 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   printf("Done\n");
 
   //Enable the keyboard irq
-  outb(0x21,0xfd);
-  outb(0xa1,0xff);
+  printf("Enabling keyboard... ");
   enable_IRQ();
+  IRQ_clear_mask(33);
+  printf("Done\n");
   
   uint32_t j = 0;
   while(1){}
