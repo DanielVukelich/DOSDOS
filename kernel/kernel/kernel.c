@@ -67,12 +67,9 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   idt_init();
   printf("Done\n");
 
-  //Enable the keyboard irq
-  printf("Enabling keyboard... ");
+  printf("Enabling Interrupts... ");
   enable_IRQ();
-  IRQ_clear_mask(33);
   printf("Done\n");
   
-  uint32_t j = 0;
   while(1){}
 }
