@@ -27,6 +27,7 @@
 #include <kernel/desc_tables.h>
 #include <kernel/isr.h>
 #include <kernel/pic.h>
+#include <kernel/paging.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;
@@ -40,6 +41,7 @@ void kernel_early(void)
 {
   terminal_initialize();
 }
+
 
 void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
 {
@@ -70,6 +72,14 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
   printf("Enabling Interrupts... ");
   enable_IRQ();
   printf("Done\n");
+
+  printf("Enabling Paging... ");
+  uint32_t* PDirTabl = physmm_alloc_block();
+  uint32_t* PTabl = physmm_alloc_block();
+  init_paging(PDirTabl, PTabl);
+  printf("Done\n");
+  
+
   
   while(1){}
 }
