@@ -19,6 +19,28 @@
 
 uint32_t free_index = 0;
 
+uint32_t mem_used_blocks;
+uint32_t mem_full_size_kb;
+uint32_t mem_full_size_blocks;
+
+uint32_t* mem_bitmap;  //Pointer to our block bitmap
+
+void mmap_bitset(int bit){
+  mem_bitmap[bit /32] = mem_bitmap[bit / 32] | (1 << (bit % 32));
+}
+
+void mmap_bitunset(int bit){
+  mem_bitmap[bit / 32] = mem_bitmap[bit / 32] & ~(1 << (bit % 32));
+}
+
+bool mmap_checkstatus(int bit){
+  return mem_bitmap[bit / 32] & (1 << (bit % 32));
+}
+
+uint32_t mmap_get_max_blocks(){
+  return mem_full_size_blocks;
+}
+
 size_t init_mmap(multiboot_info_t* mbt, uint32_t* physmm_bitmap, const void* START_OF_KERNEL, const void* END_OF_KERNEL){
 
   unsigned long flags = (mbt->flags) >> 6;
@@ -29,13 +51,13 @@ size_t init_mmap(multiboot_info_t* mbt, uint32_t* physmm_bitmap, const void* STA
   }
 
   unsigned long mmap_entries = mbt->mmap_length / sizeof(memory_map_t);
-  memory_map_t* mmap = mbt->mmap_addr;
+  memory_map_t* mmap = (memory_map_t*) mbt->mmap_addr;
 
   unsigned long totmem = 0;
   int last_addressable_index = -1;
 
   //First, loop through to get the total amount of memory to play with
-  for(int i = 0; i < mmap_entries; i++){
+  for(unsigned int i = 0; i < mmap_entries; i++){
 
     unsigned long start = mmap[i].base_addr_low;
     unsigned long start_h = mmap[i].base_addr_high;
@@ -82,7 +104,7 @@ size_t init_mmap(multiboot_info_t* mbt, uint32_t* physmm_bitmap, const void* STA
 
     //Now just initialize the region if it is type 1
     if(type == 1)
-      physmm_init_region(start, length);
+      physmm_init_region( (void*) start, length);
 
   }
 
@@ -146,8 +168,8 @@ void* physmm_alloc_blocks(size_t size){
   if(pageframe == -1)
     return 0;
 
-  for(int i = 0; i < size; ++i)
-  mmap_bitset(pageframe + i);
+  for(unsigned int i = 0; i < size; ++i)
+    mmap_bitset(pageframe + i);
 
   uint32_t address = (pageframe * PHYSMM_BLOCK_SIZE);
 

@@ -32,12 +32,6 @@
 //Size in bytes of each block as well as block alignment
 #define PHYSMM_BLOCK_SIZE 4096
 
-static uint32_t mem_used_blocks = 0;
-static uint32_t mem_full_size_kb = 0;
-static uint32_t mem_full_size_blocks = 0;
-
-static uint32_t* mem_bitmap = 0;  //Pointer to our block bitmap
-
 int mmap_first_free();
 int mmap_first_free_s(size_t size);
 
@@ -51,20 +45,12 @@ void* physmm_alloc_block();
 void* physmm_alloc_blocks(size_t size);
 uint32_t physmm_freeblock_count();
 
-inline void mmap_bitset(int bit){
-  mem_bitmap[bit /32] = mem_bitmap[bit / 32] | (1 << (bit % 32));
-}
+void mmap_bitset(int bit);
+  
+void mmap_bitunset(int bit);
 
-inline void mmap_bitunset(int bit){
-  mem_bitmap[bit / 32] = mem_bitmap[bit / 32] & ~(1 << (bit % 32));
-}
+bool mmap_checkstatus(int bit);
 
-inline bool mmap_checkstatus(int bit){
-  return mem_bitmap[bit / 32] & (1 << (bit % 32));
-}
-
-inline uint32_t mmap_get_max_blocks(){
-  return mem_full_size_blocks;
-}
+uint32_t mmap_get_max_blocks();
 
 #endif

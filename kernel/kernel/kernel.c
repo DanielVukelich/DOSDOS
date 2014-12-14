@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #include <kernel/tty.h>
 #include <kernel/cursor.h>
@@ -42,9 +43,9 @@ void kernel_early(void)
   terminal_initialize();
 }
 
-
-void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
+void kernel_main(multiboot_info_t* mbt)
 {
+  
   cursor_hide();
   printf("Kernel loaded from %p to %p\n\n", START_OF_KERNEL, END_OF_KERNEL);
 
@@ -59,7 +60,7 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magicvoid)
     printf("Error initializing Physical Memory Manager\n");
       abort();
   }
-  printf("Done (%d pages)\n", physmm_freeblock_count());
+  printf("Done (%d pages)\n", (unsigned int)physmm_freeblock_count());
 
   printf("Initializing GDT... ");
   gdt_init();

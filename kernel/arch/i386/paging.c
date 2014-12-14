@@ -64,4 +64,3 @@ void init_paging(uint32_t* dirptr, uint32_t* tabptr){
   loadPageDirectory(dirptr);
   enablePaging();
 }
-
