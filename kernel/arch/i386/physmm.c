@@ -17,8 +17,6 @@
 
 #include "kernel/physmm.h"
 
-uint32_t free_index = 0;
-
 uint32_t mem_used_blocks;
 uint32_t mem_full_size_kb;
 uint32_t mem_full_size_blocks;
@@ -144,11 +142,10 @@ void* physmm_alloc_block(){
 
   int pageframe = mmap_first_free();
 
-  if(pageframe == -1)
+  if(pageframe == -1){
     return 0;
+  }
 
-  free_index = pageframe;
-  
   mmap_bitset(pageframe);
 
   uint32_t address = (pageframe * PHYSMM_BLOCK_SIZE);
@@ -182,9 +179,6 @@ void* physmm_alloc_blocks(size_t size){
 void physmm_free_block(const void* p){
   
   uint32_t address = (uint32_t) p;
-  
-  if (address < free_index)
-    free_index = address;
   
   int pageframe = address / PHYSMM_BLOCK_SIZE;
 
@@ -238,12 +232,13 @@ int mmap_first_free(){
   //Find the first zero bit in our bitmap.  This corresponds to the first free
   //Block of 4kb in RAM
   
-  for(uint32_t i = free_index; i < mem_full_size_blocks / 32; ++i){
+  for(uint32_t i = 0; i < mem_full_size_blocks / 32; ++i){
     if(mem_bitmap[i] != 0xFFFFFFFF){
-      for(int j = 0; j < 32; ++j){
+      for(uint32_t j = 0; j < 32; ++j){
 	int bit = 1 << j;
-	if(! (mem_bitmap[i] & bit) )
+	if(! (mem_bitmap[i] & bit) ){
 	  return ( (i * 4 * 8) + j);
+	}
       }
     }
   }
@@ -259,7 +254,7 @@ int mmap_first_free_s(size_t size){
   if (size == 1)
     return mmap_first_free();
 
-  for (uint32_t i = free_index; i < mem_full_size_blocks / 32; ++i)
+  for (uint32_t i = 0; i < mem_full_size_blocks / 32; ++i)
     if (mem_bitmap[i] != 0xffffffff)
       for (int j=0; j < 32; j++) {	//! test each bit in the dword
 	int bit = 1 << j;

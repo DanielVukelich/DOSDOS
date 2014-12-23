@@ -76,9 +76,17 @@ void kernel_main(multiboot_info_t* mbt)
 
   printf("Enabling Paging... ");
   uint32_t* PDirTabl = physmm_alloc_block();
-  uint32_t* PTabl = physmm_alloc_block();
-  init_paging(PDirTabl, PTabl);
-  printf("Done\n");
+
+  /*
+  size_t kstblock = addr_to_block(START_OF_KERNEL);
+  size_t kenblock = addr_to_block(END_OF_KERNEL);
+  size_t kspan = ( (kenblock - kstblock) + 1);
+  */
   
-  while(1){}
+  uint32_t* PTabl = physmm_alloc_block();  
+  init_paging(PDirTabl, PTabl, START_OF_KERNEL, END_OF_KERNEL);
+  printf("Done\n");
+
+  while(1){};
+  
 }

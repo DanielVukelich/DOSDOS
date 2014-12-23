@@ -17,7 +17,7 @@
 #include <kernel/isr.h>
 
 static bool isFatal(uint32_t interrupt){
-  return (interrupt != 14);
+  return (interrupt != 99);
 }
 
 static char* interrupt_name(uint32_t intr){
@@ -76,7 +76,7 @@ static void keyboard_interrupt(){
 }
 
 void isr_handler(registers_t* regs)
-{  
+{
   if((regs->int_no < 32) && (isFatal(regs->int_no))){
 
     terminal_bluescreen();

@@ -19,22 +19,32 @@
 #define _KERNEL_PAGING_H
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
 
-void init_paging(uint32_t* dirptr, uint32_t* tabptr);
+#include <kernel/physmm.h>
+
+//Tabptr must be large enough to hold enough blocks to cover the whole kernel
+void init_paging(uint32_t* dirptr, uint32_t* tabptr, const void* krnl_start, const void* krnl_end);
 void init_KernelPT(uint32_t* tabptr);
 void init_pageDir(uint32_t* dirptr);
 void insert_KernelPTentry(uint32_t* dirptr, uint32_t* tabptr, uint32_t dirindex);
+void insert_Kernel_PTValue(uint32_t* tabptr, uint32_t tabindex);
+bool register_block_for_kernel(uint32_t* dirptr, size_t block);
 
-inline uint32_t block_to_DirIndex(uint32_t block){
+uint32_t* get_dirptr();
+
+inline uint32_t block_to_DirIndex(const size_t block){
   return (block / 1024);
 }
 
-inline uint32_t block_to_PTIndex(uint32_t block){
+inline uint32_t block_to_PTIndex(const size_t block){
   return (block % 1024);
 }
 
-inline uint32_t addr_to_block(void* addr){
-  return ( ( (uint32_t) addr) / 4096);
+inline size_t addr_to_block(const void* addr){
+  return ( ( (size_t) addr) / 4096);
 }
 
 #endif

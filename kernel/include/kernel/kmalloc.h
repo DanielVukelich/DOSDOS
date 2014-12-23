@@ -20,8 +20,29 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <kernel/physmm.h>
+#include <kernel/paging.h>
+
+//The headers need to be even-byte aligned
+//Status has the following layout:
+//Bit 0:  Whether or not the memory section this header refers to is free
+//Bits 1-31:  The address of the previous memory section's header
+//The next memory section can be found by (&memheader + size)+sizeof(memheader_t)
+//and then rounding it up to the nearest even number.
+//Note that if size is 0, then the upper 31 bits of status are instead treated as a
+//pointer to the next memory section.  This next memory section's 31 status bits
+//will, in turn, point to the memory header of the section that pointed to the 0
+//size header.  That is to say:  While traversing the memory list backwards, one
+//will never encounter any headers with size 0.
+
+//Also note that size is always an even number.  kalloc will round up the requested
+//memory such that this invariant always holds true.
+typedef struct memheader{
+  size_t size;
+  uint32_t status;
+}memheader_t;
 
 void* kmalloc(size_t size);
 void kfree(void* ptr);
