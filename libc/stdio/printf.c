@@ -147,7 +147,7 @@ int print_int(const int val){
     toreturn = 1;
   }
   
-  for(baseten; baseten > 0; --baseten){
+  for(;baseten > 0; --baseten){
 
    toreturn++;
     

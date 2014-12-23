@@ -84,9 +84,9 @@ void isr_handler(registers_t* regs)
 
     printf("\t\t\t\t\t\tSOMETHING JUST WENT VERY WRONG\n\nI'd like to");
     printf(" interject for a moment.  What you're referring to as:\n\n\t");
-    printf("Interrupt %d\n\nIs in fact, a fatal exception, ", regs->int_no);
+    printf("Interrupt %d\n\nIs in fact, a fatal exception, ", (int) regs->int_no);
     printf("or as I've recently taken to  calling it:\n\n");
-    printf("\t%s with error code %p\n", name, regs->err_code);
+    printf("\t%s with error code %p\n", name, (void *) regs->err_code);
     
     //Halt the machine
     while(1);

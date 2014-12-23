@@ -29,6 +29,7 @@
 #include <kernel/isr.h>
 #include <kernel/pic.h>
 #include <kernel/paging.h>
+#include <kernel/kmalloc.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;
@@ -45,7 +46,6 @@ void kernel_early(void)
 
 void kernel_main(multiboot_info_t* mbt)
 {
-  
   cursor_hide();
   printf("Kernel loaded from %p to %p\n\n", START_OF_KERNEL, END_OF_KERNEL);
 
@@ -79,8 +79,6 @@ void kernel_main(multiboot_info_t* mbt)
   uint32_t* PTabl = physmm_alloc_block();
   init_paging(PDirTabl, PTabl);
   printf("Done\n");
-  
-
   
   while(1){}
 }

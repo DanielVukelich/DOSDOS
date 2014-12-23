@@ -15,16 +15,4 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
-
-const char* strchr(const char* str, int character){
-
-  for(; str != '\0'; ++str){
-    if(*str == (char) character)
-      return str;
-  }
-
-  return NULL;
-  
-}
-
+#include "kernel/kmalloc.h"

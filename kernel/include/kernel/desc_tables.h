@@ -20,9 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-extern void gdt_flush();
-extern void tss_flush();
+#include <string.h>
 
 extern void isr0();
 extern void isr1();

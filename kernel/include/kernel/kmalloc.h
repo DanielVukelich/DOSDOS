@@ -15,16 +15,15 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
+#ifndef _KERNEL_KMALLOC_H
+#define _KERNEL_KMALLOC_H
 
-const char* strchr(const char* str, int character){
+#include <stdint.h>
+#include <stddef.h>
 
-  for(; str != '\0'; ++str){
-    if(*str == (char) character)
-      return str;
-  }
+#include <kernel/physmm.h>
 
-  return NULL;
-  
-}
+void* kmalloc(size_t size);
+void kfree(void* ptr);
 
+#endif

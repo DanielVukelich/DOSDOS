@@ -17,6 +17,11 @@
 
 #include <kernel/desc_tables.h>
 
+
+extern void gdt_flush();
+extern void tss_flush();
+extern void idt_flush();
+
 static void write_tss(int32_t, uint16_t, uint32_t);
   
 struct gdt_entry gdt[6];

@@ -30,10 +30,10 @@ void terminal_clear(){
 
 void terminal_rowreplace(size_t oldrow, size_t newrow){
 
-  if( (oldrow >= VGA_HEIGHT) || (newrow >= VGA_HEIGHT) || (oldrow < 0) || (newrow < 0) )
+  if( (oldrow >= VGA_HEIGHT) || (newrow >= VGA_HEIGHT) )
     return;
 
-  for(int x = 0; x < VGA_WIDTH; ++x){
+  for(unsigned int x = 0; x < VGA_WIDTH; ++x){
     int indexold = (oldrow * VGA_WIDTH) + x;
     int indexnew = (newrow * VGA_WIDTH) + x;
 
@@ -45,12 +45,12 @@ void terminal_rowreplace(size_t oldrow, size_t newrow){
 
 void terminal_rowblank(size_t row){
 
-  if(row >= VGA_HEIGHT || row < 0)
+  if(row >= VGA_HEIGHT)
     return;
 
-  for(int x = 0; x < VGA_WIDTH; ++x){
+  for(unsigned int x = 0; x < VGA_WIDTH; ++x){
     int index = (row * VGA_WIDTH) + x;
-    terminal_buffer[index] = make_vgaentry("\0", terminal_color);
+    terminal_buffer[index] = make_vgaentry('\0', terminal_color);
   }
   
 }
@@ -96,7 +96,7 @@ void terminal_putchar(char c)
 
   if(terminal_row == VGA_HEIGHT){
     //Scroll the screen
-    for(int y = 0; y < VGA_HEIGHT; y++){
+    for(unsigned int y = 0; y < VGA_HEIGHT; y++){
       terminal_rowreplace(y,y+1);
     }
 
