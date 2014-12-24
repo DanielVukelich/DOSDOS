@@ -55,6 +55,10 @@ memheader_t* next_memheader(memheader_t* current){
   return nextheader;
 }
 
+inline bool is_blockstart_header(memheader_t* current){
+  return ((!prev_memheader(current)) || (next_memheader(prev_memheader(current)) != current));
+}
+
 memheader_t* final_memheader(){
 
   memheader_t* trav = memstart;
@@ -83,6 +87,8 @@ void set_memheader_prev(memheader_t* cur, memheader_t* prev){
   if( !(*cur).size )
     cur = next_memheader(cur);
 
+  //If our original cur was the final block header, then it doesn't have a next
+  //so we can't have its next point back to a previous.  Do nothing then
   if(cur){
     uint32_t status = !is_free(cur);
     (*cur).status = (uint32_t) ( (uint32_t) prev  | status);
@@ -214,4 +220,37 @@ void* kmalloc(size_t size){
   //We don't have enough memory
   //OH SHIT
   return NULL;
+}
+
+void kfree(void* ptr){
+  memheader_t* tofree = (ptr - sizeof(memheader_t));
+  
+  (*tofree).status = ((*tofree).status & 0xFFFFFFFE);
+  
+  //Get our next neighbor
+  memheader_t* next = next_memheader(tofree);
+  if(!(*next).size)
+    next = next_memheader(next);
+
+  //Now try to get our previous neighbor and merge
+  if(!is_blockstart_header(tofree)){
+    memheader_t* prev = prev_memheader(tofree);
+    if(is_free(prev)){
+      (*prev).size += (*tofree).size + sizeof(memheader_t);
+      set_memheader_prev(next, prev);
+      tofree = prev;
+    }
+  }
+
+  //Now try to merge our next memheader back onto our new space
+  if(!is_blockstart_header(next)){
+    memheader_t* nextnext = next_memheader(next);
+    if(is_free(next)){
+      (*tofree).size += (*next).size + sizeof(memheader_t);
+      set_memheader_prev(nextnext, tofree);
+    }
+  }
+
+  //TODO:  Search for any blocks that are (aside from their headers) completely
+  //       free.  Free them via the physmm
 }

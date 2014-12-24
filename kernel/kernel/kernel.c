@@ -88,11 +88,14 @@ void kernel_main(multiboot_info_t* mbt)
   printf("Done\n");
   
   int* s = kmalloc(sizeof(int));
-  int* j = kmalloc(sizeof(size_t));
-  int* l = kmalloc(4088);
-  s = l;
-  l = j;
-  j = s;
+  int* j = kmalloc(sizeof(int));
+  int* l = kmalloc(sizeof(int));
+  *s = *l;
+  *l = *j;
+  *j = *s;
+  kfree(j);
+  kfree(s);
+  kfree(l);
   printheaders();
   while(1){};
   
