@@ -86,7 +86,14 @@ void kernel_main(multiboot_info_t* mbt)
   uint32_t* PTabl = physmm_alloc_block();  
   init_paging(PDirTabl, PTabl, START_OF_KERNEL, END_OF_KERNEL);
   printf("Done\n");
-
+  
+  int* s = kmalloc(sizeof(int));
+  int* j = kmalloc(sizeof(size_t));
+  int* l = kmalloc(4088);
+  s = l;
+  l = j;
+  j = s;
+  printheaders();
   while(1){};
   
 }

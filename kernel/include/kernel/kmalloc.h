@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <kernel/physmm.h>
 #include <kernel/paging.h>
@@ -46,5 +47,6 @@ typedef struct memheader{
 
 void* kmalloc(size_t size);
 void kfree(void* ptr);
+void printheaders();
 
 #endif
