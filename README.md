@@ -31,5 +31,5 @@ These are the very long term plans for DOSDOS are:
  DODSDOS requires a crossplatform build of gcc in order to build.  Instructions for obtaining a crossplatform build of gcc is beyond the scope of this readme, but suffice to say that instructions can be found here: http://wiki.osdev.org/GCC_Cross-Compiler.
  
  Once you have a working version of `i686-elf-gcc` in your `$PATH`, you are able to now build DOSDOS.  Building requires no additional dependencies.  To build, simply run `build.sh`.
- If you want to turn the build into a bootable .iso, installing GRUB and running `iso.sh`.  Lastly, if you have qemu installed, you can run the dosdos.iso in a virtual machine by running `qemu.sh`.
+ If you want to turn the build into a bootable .iso, you need to install GRUB and xorriso. You can then create the iso by running `iso.sh`.  Lastly, if you have qemu installed, you can run the dosdos.iso in a virtual machine by running `qemu.sh`.
  All of the above steps, from building to loading the iso into qemu, can be run in one go by running `fullbuild` from the root project directory.
