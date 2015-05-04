@@ -31,10 +31,10 @@ OBJS:=\
 $(KERNEL_ARCH_OBJS) \
 kernel/kernel.o \
 
-CRTI_OBJ:=$(ARCHDIR)/crti.o
+CRTI_OBJ:=$(ARCHDIR)/build_structure/crti.o
 CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtbegin.o)
 CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ:=$(ARCHDIR)/crtn.o
+CRTN_OBJ:=$(ARCHDIR)/build_structure/crtn.o
 
 ALL_OUR_OBJS:=\
 $(CRTI_OBJ) \
@@ -52,8 +52,8 @@ all: dosdos.kernel
 
 .PHONY: all clean install install-headers install-kernel
 
-dosdos.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/linker.ld
-	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
+dosdos.kernel: $(OBJ_LINK_LIST) $(ARCHDIR)/build_structure/linker.ld
+	$(CC) -T $(ARCHDIR)/build_structure/linker.ld -o $@ $(CFLAGS) $(OBJ_LINK_LIST) $(LDFLAGS) $(LIBS)
 
 %.o: %.c
 	$(CC) -Werror -Wall -c $< -o $@ -std=gnu11 $(CFLAGS) $(CPPFLAGS)
