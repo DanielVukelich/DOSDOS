@@ -15,7 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <kernel/desc_tables.h>
+#include <kernel/tables/desc_tables.h>
 
 
 extern void gdt_flush();

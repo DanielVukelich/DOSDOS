@@ -40,7 +40,7 @@
 #define ICW4_BUF_MASTER	0x0C		/* Buffered mode/master */
 #define ICW4_SFNM	0x10		/* Special fully nested (not) */
 
-#include <kernel/pic.h>
+#include <kernel/low_level/pic.h>
 
 void PIC_sendEOI(uint8_t irq){
   if((irq >= PIC2) && (irq < (PIC2 + 8))){

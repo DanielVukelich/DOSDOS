@@ -23,9 +23,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <kernel/tty.h>
-#include <kernel/pic.h>
-#include <kernel/dos.h>
+#include <kernel/display/tty.h>
+#include <kernel/low_level/pic.h>
+#include <kernel/utils/dos.h>
 
 typedef struct registers{
   uint32_t gs, fs, es, ds;

@@ -21,7 +21,7 @@
 #include <string.h>
  
 #if defined(__is_dosdos_kernel)
-#include <kernel/tty.h>
+#include <kernel/display/tty.h>
 #endif
 
 const char* NUMBER_LIST = "0123456789ABCDEF";

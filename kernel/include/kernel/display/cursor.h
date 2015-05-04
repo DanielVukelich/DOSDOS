@@ -18,6 +18,11 @@
 #ifndef _KERNEL_CURSOR_H
 #define _KERNEL_CURSOR_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#include <kernel/utils/dos.h>
+
 //const unsigned short CRTC_ADDR = 0x3D4;
 
 bool cursor_setpos(unsigned short x, unsigned short y);

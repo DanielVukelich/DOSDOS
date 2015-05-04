@@ -15,8 +15,8 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "kernel/paging.h"
 #include <stdlib.h>
+#include <kernel/mem/paging.h>
 
 extern void loadPageDirectory(uint32_t*);
 extern void enablePaging();

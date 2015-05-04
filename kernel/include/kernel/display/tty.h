@@ -15,19 +15,21 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
+#ifndef _KERNEL_TTY_H
+#define _KERNEL_TTY_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
  
-#if defined(__is_dosdos_kernel)
-#include <kernel/display/tty.h>
-#endif
+#include <kernel/display/vga.h>
  
-int putchar(int ic)
-{
-#if defined(__is_dosdos_kernel)
-	char c = (char) ic;
-	terminal_write(&c, sizeof(c));
-#else
-	// TODO: You need to implement a write system call.
+void terminal_initialize(void);
+void terminal_putchar(char c);
+void terminal_write(const char* data, size_t size);
+void terminal_writestring(const char* data);
+void terminal_bluescreen();
+void terminal_clear();
+  
 #endif
-	return ic;
-}

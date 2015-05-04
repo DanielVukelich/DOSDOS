@@ -15,10 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#include <kernel/dos.h>
+#include <kernel/display/cursor.h>
 
 const unsigned short CRTC_ADDR = 0x3D4;
 

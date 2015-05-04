@@ -15,7 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "kernel/kmalloc.h"
+#include <kernel/mem/kmalloc.h>
 
 memheader_t* memstart = NULL;
 

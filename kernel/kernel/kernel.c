@@ -21,15 +21,15 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <kernel/tty.h>
-#include <kernel/cursor.h>
-#include <kernel/multiboot.h>
-#include <kernel/physmm.h>
-#include <kernel/desc_tables.h>
-#include <kernel/isr.h>
-#include <kernel/pic.h>
-#include <kernel/paging.h>
-#include <kernel/kmalloc.h>
+#include <kernel/display/tty.h>
+#include <kernel/display/cursor.h>
+#include <kernel/utils/multiboot.h>
+#include <kernel/mem/physmm.h>
+#include <kernel/tables/desc_tables.h>
+#include <kernel/low_level/isr.h>
+#include <kernel/low_level/pic.h>
+#include <kernel/mem/paging.h>
+#include <kernel/mem/kmalloc.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;
@@ -89,7 +89,7 @@ void kernel_main(multiboot_info_t* mbt)
   
   int* s = kmalloc(sizeof(int));
   int* j = kmalloc(sizeof(int));
-  int* l = kmalloc(sizeof(int));
+  int* l = kmalloc(1000 * sizeof(int));
   *s = *l;
   *l = *j;
   *j = *s;

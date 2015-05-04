@@ -15,16 +15,23 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _KERNEL_TTY_H
-#define _KERNEL_TTY_H
- 
-#include <stddef.h>
- 
-void terminal_initialize(void);
-void terminal_putchar(char c);
-void terminal_write(const char* data, size_t size);
-void terminal_writestring(const char* data);
-void terminal_bluescreen();
-void terminal_clear();
-  
+#ifndef _KERNEL_PIC_H
+#define _KERNEL_PIC_H
+
+#include <stdint.h>
+#include <stdio.h>
+
+#include <kernel/utils/dos.h>
+
+void PIC_sendEOI(uint8_t irq);
+void PIC_remap(int offset1, int offset2);
+
+void IRQ_set_mask(unsigned char IRQline);
+void IRQ_clear_mask(unsigned char IRQline);
+
+uint16_t pic_get_irr();
+uint16_t pic_get_isr();
+
+void enable_IRQ();
+
 #endif

@@ -15,7 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "kernel/physmm.h"
+#include <kernel/mem/physmm.h>
 
 uint32_t mem_used_blocks;
 uint32_t mem_full_size_kb;

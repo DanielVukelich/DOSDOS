@@ -23,8 +23,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <kernel/physmm.h>
-#include <kernel/paging.h>
+#include <kernel/mem/physmm.h>
+#include <kernel/mem/paging.h>
 
 //The headers need to be even-byte aligned
 //Status has the following layout:

@@ -23,7 +23,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include <kernel/physmm.h>
+#include <kernel/mem/physmm.h>
 
 //Tabptr must be large enough to hold enough blocks to cover the whole kernel
 void init_paging(uint32_t* dirptr, uint32_t* tabptr, const void* krnl_start, const void* krnl_end);

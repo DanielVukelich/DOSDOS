@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "kernel/multiboot.h"
+#include <kernel/utils/multiboot.h>
 
 //Number of blocks represented by one byte in out bitmap
 #define BLOCKS_PER_BYTE 8
