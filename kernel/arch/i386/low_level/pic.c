@@ -23,8 +23,8 @@
 #define PIC2_COMMAND	PIC2
 #define PIC2_DATA	(PIC2+1)
 
-#define PIC_READ_IRR                0x0a    /* OCW3 irq ready next CMD read */
-#define PIC_READ_ISR                0x0b    /* OCW3 irq service next CMD read */
+#define PIC_READ_IRR    0x0a            /* OCW3 irq ready next CMD read */
+#define PIC_READ_ISR    0x0b            /* OCW3 irq service next CMD read */
 
 #define PIC_EOI		0x20		/* End-of-interrupt command code */
 
@@ -40,19 +40,22 @@
 #define ICW4_BUF_MASTER	0x0C		/* Buffered mode/master */
 #define ICW4_SFNM	0x10		/* Special fully nested (not) */
 
+//If we get an IRQ7, reading the pic_get_isr, we should find bit 7 is set
+#define EXPECTED_IRQ7_PIC1_ISR 0x0080
+//If we get an IRQ15, reading the pic_get_isr, we should find bit 15 is set
+#define EXPECTED_IRQ15_PIC2_ISR 0x8000
+
 #include <kernel/low_level/pic.h>
 
-void PIC_sendEOI(uint8_t irq){
-  if((irq >= PIC2) && (irq < (PIC2 + 8))){
-    outb(PIC2_COMMAND, PIC_EOI);
-    outb(PIC1_COMMAND, PIC_EOI);
-  }
-  else if ((irq >= PIC1) && (irq < PIC2)){
-    outb(PIC1_COMMAND, PIC_EOI);
-  }
-}
+static int pic1_mapstart = 0;
+static int pic2_mapstart = 8;
+
+static uint64_t spurious_irq_count = 0;
 
 void PIC_remap(int offset1, int offset2){
+
+  pic1_mapstart = offset1;
+  pic2_mapstart = offset2;
   
   unsigned char a1, a2;
   
@@ -110,7 +113,7 @@ void IRQ_clear_mask(unsigned char IRQline) {
   outb(port, value);        
 }
 
-static uint16_t __pic_get_irq_reg(int ocw3)
+static inline uint16_t __pic_get_irq_reg(int ocw3)
 {
     /* OCW3 to PIC CMD to get the register values.  PIC2 is chained, and
      * represents IRQs 8-15.  PIC1 is IRQs 0-7, with 2 being the chain */
@@ -133,4 +136,49 @@ uint16_t pic_get_isr()
 
 void enable_IRQ(){
   asm("sti");
+}
+
+static inline bool is_spurious_irq(uint8_t irq){
+  
+  uint16_t pic_isr = pic_get_isr();
+
+  //Bitwise AND to check that the expected IRQ line is indeed raised
+  if(irq == (pic1_mapstart + 7)){
+    return (pic_isr & EXPECTED_IRQ7_PIC1_ISR);
+  }else if(irq == (pic2_mapstart + 7)){
+    return (pic_isr & EXPECTED_IRQ15_PIC2_ISR);
+  }
+
+  //The irq is not the lowest priority for either PIC, so we know it can't be spurious
+  return false;
+}
+
+void PIC_sendEOI(uint8_t irq){
+
+  bool irq_is_spurious = is_spurious_irq(irq);
+  
+  if((irq >= pic2_mapstart) && (irq < (pic2_mapstart + 8))){
+
+    //If the IRQ is spurious, then dont send EOI to the slave PIC
+    //but increment the spurious IRQ counter to keep track
+    if(!irq_is_spurious)
+      outb(PIC2_COMMAND, PIC_EOI);
+    else
+      ++spurious_irq_count;
+
+    //Even if it is a spurious IRQ, we still send EOI to the master PIC in this case
+    outb(PIC1_COMMAND, PIC_EOI);
+    
+  }else if ((irq >= pic1_mapstart) && (irq < (pic1_mapstart + 8))){
+    //If it is a spurious IRQ in this case, we send no EOI anywhere
+    //but we do increment the spurious IRQ count
+    if(!irq_is_spurious)
+      outb(PIC1_COMMAND, PIC_EOI);
+    else
+      ++spurious_irq_count;   
+  }
+}
+
+uint64_t num_spurious_IRQs(){
+  return spurious_irq_count;
 }

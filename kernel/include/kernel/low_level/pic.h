@@ -34,4 +34,6 @@ uint16_t pic_get_isr();
 
 void enable_IRQ();
 
+uint64_t num_spurious_IRQs();
+
 #endif

@@ -15,6 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
