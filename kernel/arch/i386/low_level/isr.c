@@ -93,8 +93,20 @@ void isr_handler(registers_t* regs)
     
   }
 
-  if(regs->int_no == 33){
+  //Handle our IRQs
+  //interrupt numbers 0-31 are reserved by intel, so subtract 32
+  //to get the isa irq code
+  
+  int isa_irq = (regs->int_no - 32);
+  
+  switch(isa_irq){
+  case 0:
+    ////Programmable interrupt timer interrupt
+    break;
+  case 1:
+    //Keyboard interrupt
     keyboard_interrupt();
+    break;
   }
   
   PIC_sendEOI(regs->int_no);
