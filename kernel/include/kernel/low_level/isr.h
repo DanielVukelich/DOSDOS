@@ -26,6 +26,7 @@
 #include <kernel/display/tty.h>
 #include <kernel/low_level/pic.h>
 #include <kernel/utils/dos.h>
+#include <kernel/drivers/keyboard.h>
 
 typedef struct registers{
   uint32_t gs, fs, es, ds;
@@ -35,5 +36,7 @@ typedef struct registers{
 }registers_t;
 
 void isr_handler(registers_t* regs);
+
+bool pit_changed;
 
 #endif

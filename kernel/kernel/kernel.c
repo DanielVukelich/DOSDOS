@@ -31,6 +31,7 @@
 #include <kernel/low_level/pic.h>
 #include <kernel/mem/paging.h>
 #include <kernel/mem/kmalloc.h>
+#include <kernel/drivers/keyboard.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;
@@ -77,27 +78,36 @@ void kernel_main(multiboot_info_t* mbt)
 
   printf("Enabling Paging... ");
   uint32_t* PDirTabl = physmm_alloc_block();
-
-  /*
-  size_t kstblock = addr_to_block(START_OF_KERNEL);
-  size_t kenblock = addr_to_block(END_OF_KERNEL);
-  size_t kspan = ( (kenblock - kstblock) + 1);
-  */
-  
   uint32_t* PTabl = physmm_alloc_block();  
   init_paging(PDirTabl, PTabl, START_OF_KERNEL, END_OF_KERNEL);
   printf("Done\n");
   
-  int* s = kmalloc(sizeof(int));
-  int* j = kmalloc(sizeof(int));
-  int* l = kmalloc(1000 * sizeof(int));
-  *s = *l;
-  *l = *j;
-  *j = *s;
-  kfree(j);
-  kfree(s);
-  kfree(l);
-  printheaders();
+ printf("Initializing Keyboard Driver... ");
+  int kbd_drv_res = initialize_ps2_keyboard();
+  switch(kbd_drv_res){
+  case 0:
+    printf("Done\n");
+    break;
+  case 1:
+    printf("Failed self test\n");
+    break;
+  case 2:
+    printf("Failed to set scan code\n");
+    break;
+  case 3:
+    printf("Failed to set typematic data\n");
+    break;
+  case 4:
+    printf("Failed to set keyboard LEDs\n");
+    break;
+  case 5:
+    printf("Failed to enable key reading\n");
+    break;
+  default:
+    printf("Unknown Error\n");
+    break;
+  }
+  
   while(1){};
   
 }

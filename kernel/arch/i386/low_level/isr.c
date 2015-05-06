@@ -69,12 +69,6 @@ static char* interrupt_name(uint32_t intr){
   }
 }
 
-static void keyboard_interrupt(){
-  //Read the keyboard buffer to let the interrupt pass
-  printf("Pressed a key ");
-  inb(0x60);
-}
-
 void isr_handler(registers_t* regs)
 {
   if((regs->int_no < 32) && (isFatal(regs->int_no))){
@@ -102,10 +96,11 @@ void isr_handler(registers_t* regs)
   switch(isa_irq){
   case 0:
     ////Programmable interrupt timer interrupt
+    pit_changed = true;
     break;
   case 1:
     //Keyboard interrupt
-    keyboard_interrupt();
+    handle_keyboard_interrupt();
     break;
   }
   
