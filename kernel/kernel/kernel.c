@@ -81,10 +81,13 @@ void kernel_main(multiboot_info_t* mbt)
   uint32_t* PTabl = physmm_alloc_block();  
   init_paging(PDirTabl, PTabl, START_OF_KERNEL, END_OF_KERNEL);
   printf("Done\n");
-  
- printf("Initializing Keyboard Driver... ");
+
+  printf("Initializing Keyboard Driver... ");
   int kbd_drv_res = initialize_ps2_keyboard();
   switch(kbd_drv_res){
+  case -1:
+    printf("Failed to configure keyboard controller");
+    break;
   case 0:
     printf("Done\n");
     break;

@@ -95,8 +95,7 @@ void isr_handler(registers_t* regs)
   
   switch(isa_irq){
   case 0:
-    ////Programmable interrupt timer interrupt
-    pit_changed = true;
+    //Programmable interrupt timer interrupt
     break;
   case 1:
     //Keyboard interrupt

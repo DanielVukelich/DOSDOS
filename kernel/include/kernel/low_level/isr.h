@@ -37,6 +37,4 @@ typedef struct registers{
 
 void isr_handler(registers_t* regs);
 
-bool pit_changed;
-
 #endif

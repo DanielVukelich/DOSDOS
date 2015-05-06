@@ -67,7 +67,7 @@ typedef struct kbd_response{
 
 //Sends one byte (either data or command) to the keyboard
 //Returns true if there was an error
-bool send_byte_to_kbd(uint8_t cmd){
+bool send_byte_to_controller(uint8_t cmd){
   
   //Poll the PS/2 status register until we time out or get a
   //response with bit 1 clear
@@ -91,6 +91,46 @@ bool send_byte_to_kbd(uint8_t cmd){
   return false;
 }
 
+kbd_response_t run_self_test(){
+  int i = 0;
+
+  kbd_response_t toreturn = {true, RESEND};
+  
+  do{
+    
+    received_interrupt = false;
+    bool waserror = send_byte_to_controller(SELF_TEST);
+    //No error when sending the byte?  Then check for the response
+    if(!waserror){
+      
+      //Loop until our keyboard interrupt says we received a response
+      //printf("Waiting for int ");
+      while(!received_interrupt);
+      received_interrupt = false;
+      
+      uint8_t response = inb(PS2_DATA_REG);
+      
+      //If we didn't get asked for a resend, then it was sent successfully
+      if(response != RESEND){
+	//We may still have to wait for the test results if all we get is
+	//an acknowledgement of the test command being received
+	if(response == ACK){
+	  while(!received_interrupt);
+	  response = inb(PS2_DATA_REG);
+	}
+	toreturn.send_error = false;
+	toreturn.response_code = response;
+	return toreturn;
+      }
+    }
+    ++i;
+  }
+  while(i < MAX_RESEND_ATTEMPTS);
+  
+  //Return a keyboard response saying we encountered an error
+  return toreturn;
+}
+
 //Sends a command byte to the keyboard.
 kbd_response_t send_command_byte(uint8_t cmd){
 
@@ -99,15 +139,19 @@ kbd_response_t send_command_byte(uint8_t cmd){
   kbd_response_t toreturn = {true, RESEND};
   
   do{
-    bool waserror = send_byte_to_kbd(cmd);
+    
     received_interrupt = false;
+    bool waserror = send_byte_to_controller(cmd);
     //No error when sending the byte?  Then check for the response
     if(!waserror){
       
-      //Loop until out keyboard interrupt says we received a response
+      //Loop until our keyboard interrupt says we received a response
+      //printf("Waiting for int ");
       while(!received_interrupt);
       
       uint8_t response = inb(PS2_DATA_REG);
+      
+      //printf("Received interrupt %i", (int) response);
       
       //If we didn't get asked for a resend, then it was sent successfully
       if(response != RESEND){
@@ -116,9 +160,10 @@ kbd_response_t send_command_byte(uint8_t cmd){
 	return toreturn;
       }
     }
+    ++i;
   }
   while(i < MAX_RESEND_ATTEMPTS);
-
+  
   //Return a keyboard response saying we encountered an error
   return toreturn;
 }
@@ -127,25 +172,27 @@ kbd_response_t send_command(uint8_t cmd, uint8_t data){
 
   int i = 0;
   kbd_response_t toreturn = {true, RESEND};
-  received_interrupt = false;
     
   do{
-    bool waserror = send_byte_to_kbd(cmd);
+    received_interrupt = false;
+    bool waserror = send_byte_to_controller(cmd);
     
     //Loop infinitely until we get an interrupt
     //printf(" ");
     while(!received_interrupt);
-    received_interrupt = false;
 
     uint8_t response = inb(PS2_DATA_REG);
     
     //If we sent the command successfully, try sending the data
     if(!waserror && response != RESEND){
       
-      waserror = send_byte_to_kbd(data);
+      received_interrupt = false;
+      waserror = send_byte_to_controller(data);
 
       //Loop infinitely until we get an interrupt
       while(!received_interrupt);
+
+      
       response = inb(PS2_DATA_REG);
       
       //If we sent the data successfully, read the response
@@ -159,6 +206,7 @@ kbd_response_t send_command(uint8_t cmd, uint8_t data){
 	}
       }
     }
+    ++i;
   }
   while(i < MAX_RESEND_ATTEMPTS);
   
@@ -169,6 +217,7 @@ kbd_response_t send_command(uint8_t cmd, uint8_t data){
 
 //Initializes the Keyboard.
 //Error codes:
+//-1 Failed to configure keyboard conroller
 //0 No error
 //1 Failed self test
 //2 Failed to set to scan code mode 2
@@ -177,6 +226,15 @@ kbd_response_t send_command(uint8_t cmd, uint8_t data){
 //5 Failed to enable key scanning
 int initialize_ps2_keyboard(){
 
+  initialized = false;
+
+  kbd_response_t response;
+
+  //Disable scanning
+  response = send_command_byte(DISABLE_SCANNING);
+  if(response.send_error)
+    return -1;
+  
   //Read from the ps2 controller's config byte
   outb(PS2_STATUS_CMD_REG, GET_CONFIG_BYTE);
   //Wait for the status register to say we have the config byte
@@ -187,21 +245,19 @@ int initialize_ps2_keyboard(){
   uint8_t configbyte = inb(PS2_DATA_REG);
   //Mask it with what we want it to be and then send it back in
   configbyte &= PS2_CONFIG_MASK;
+
+  //Write our new config byte
+  //First the command
   outb(PS2_STATUS_CMD_REG, SET_CONFIG_BYTE);
-  //Wait until we can send the new config byte
-  while(inb(PS2_STATUS_CMD_REG & 2)){
-    io_wait();
-  }
-  //Write our new config byte out
-  outb(PS2_DATA_REG, configbyte);
-  
+  //And then write the config byte
+  if(send_byte_to_controller(configbyte))
+    return -1;
+
   //Run the keyboard self test
-  kbd_response_t response = send_command_byte(SELF_TEST);
-  io_wait();
-  response.response_code = inb(PS2_DATA_REG);
+  response = run_self_test();
   if(response.send_error || (response.response_code != SELF_TEST_PASS))
-    return 1;
-  
+    return 1;  
+
   //Now set it to use scan code mode 2
   //response = send_command(GET_SET_SCAN_CODE, SCAN_CODE_2);
   response = send_command_byte(GET_SET_SCAN_CODE);
