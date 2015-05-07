@@ -400,7 +400,7 @@ void toggle_lock_led(uint8_t lock){
 }
 
 bool get_lock_led(uint8_t lock){
-  return (led_states & lock);
+  return (led_states & (1 << (lock % 3));
 }
 
 void handle_keyboard_interrupt(){
