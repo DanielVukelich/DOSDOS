@@ -22,6 +22,14 @@
 
 #include <kernel/utils/dos.h>
 #include <kernel/low_level/isr.h>
+
+typedef struct kbd_response{
+  //Whether or not there was an error sending
+  bool send_error;
+  //The response code from the keyboard's data register
+  uint8_t response_code;
+}kbd_response_t;
+
 //Valid choices for lock are as follows:
 //0: Scroll lock
 //1: Num lock
@@ -34,5 +42,6 @@ bool get_lock_led(uint8_t lock);
 int initialize_ps2_keyboard();
 
 void handle_keyboard_interrupt();
+
 
 #endif

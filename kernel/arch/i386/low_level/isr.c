@@ -20,6 +20,8 @@ static bool isFatal(uint32_t interrupt){
   return (interrupt != 99);
 }
 
+static volatile uint8_t counter;
+
 static char* interrupt_name(uint32_t intr){
   switch(intr){
   case 0:
@@ -89,13 +91,17 @@ void isr_handler(registers_t* regs)
 
   //Handle our IRQs
   //interrupt numbers 0-31 are reserved by intel, so subtract 32
-  //to get the isa irq code
-  
+  //to get the isa irq code.  32 is an arbitary number decided in the
+  //PIC initialization code
   int isa_irq = (regs->int_no - 32);
   
   switch(isa_irq){
   case 0:
     //Programmable interrupt timer interrupt
+    if(!(counter % 16)){
+      toggle_lock_led(2);
+    }
+    ++counter;
     break;
   case 1:
     //Keyboard interrupt

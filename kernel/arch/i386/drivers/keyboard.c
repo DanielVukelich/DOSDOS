@@ -52,18 +52,28 @@
 //Max number of times we poll the PS/2 Status register
 #define MAX_PS2_POLLS        1000
 //Max number of times to attempt to resend a byte
-#define MAX_RESEND_ATTEMPTS    3
+#define MAX_RESEND_ATTEMPTS  3
+
+//Max bytes to try to send asynchronously to the keyboard
+#define MAX_COMMAND_BUFFER_SIZE  100
+
+typedef struct async_cmd{
+  uint8_t cmd;
+  uint8_t tries;
+  uint8_t data_size;
+}async_cmd_t;
 
 static uint8_t led_states;
-volatile bool received_interrupt;
-static bool initialized = false;
 
-typedef struct kbd_response{
-  //Whether or not there was an error sending
-  bool send_error;
-  //The response code from the keyboard's data register
-  uint8_t response_code;
-}kbd_response_t;
+static async_cmd_t command_buffer[MAX_COMMAND_BUFFER_SIZE];
+static uint8_t command_buffer_head;
+static uint8_t command_buffer_tail;
+static uint8_t command_buffer_size;
+
+volatile bool awaiting_async_command;
+
+volatile bool received_interrupt;
+static bool initialized;
 
 //Sends one byte (either data or command) to the keyboard
 //Returns true if there was an error
@@ -104,7 +114,6 @@ kbd_response_t run_self_test(){
     if(!waserror){
       
       //Loop until our keyboard interrupt says we received a response
-      //printf("Waiting for int ");
       while(!received_interrupt);
       received_interrupt = false;
       
@@ -132,6 +141,7 @@ kbd_response_t run_self_test(){
 }
 
 //Sends a command byte to the keyboard.
+//Note that this is blocking and not asynchronous
 kbd_response_t send_command_byte(uint8_t cmd){
 
   int i = 0;
@@ -146,12 +156,9 @@ kbd_response_t send_command_byte(uint8_t cmd){
     if(!waserror){
       
       //Loop until our keyboard interrupt says we received a response
-      //printf("Waiting for int ");
       while(!received_interrupt);
       
       uint8_t response = inb(PS2_DATA_REG);
-      
-      //printf("Received interrupt %i", (int) response);
       
       //If we didn't get asked for a resend, then it was sent successfully
       if(response != RESEND){
@@ -168,6 +175,8 @@ kbd_response_t send_command_byte(uint8_t cmd){
   return toreturn;
 }
 
+//Sends a command and data byte to the keyboard.  Note that this
+//is blocking and not asynchronous
 kbd_response_t send_command(uint8_t cmd, uint8_t data){
 
   int i = 0;
@@ -178,11 +187,10 @@ kbd_response_t send_command(uint8_t cmd, uint8_t data){
     bool waserror = send_byte_to_controller(cmd);
     
     //Loop infinitely until we get an interrupt
-    //printf(" ");
     while(!received_interrupt);
 
     uint8_t response = inb(PS2_DATA_REG);
-    
+
     //If we sent the command successfully, try sending the data
     if(!waserror && response != RESEND){
       
@@ -269,8 +277,14 @@ int initialize_ps2_keyboard(){
   if(response.send_error)
     return 3;
 
-  //Not set the key lock LEDS to all be on
+  //Turn the key lock LEDs off and then on
+  //Turn them off
   led_states = 3;
+  response = send_command(SET_LEDS, led_states);
+  if(response.send_error)
+    return 4;
+  //Now turn them on
+  led_states = 0;
   response = send_command(SET_LEDS, led_states);
   if(response.send_error)
     return 4;
@@ -280,23 +294,109 @@ int initialize_ps2_keyboard(){
   if(response.send_error)
     return 5;
 
+  command_buffer_head = 0;
+  command_buffer_tail = 0;
+  command_buffer_size = 0;
+  awaiting_async_command = false;
   initialized = true;
   return 0;
 }
 
+void send_next_async_cmd(){
+  //If our buffer is empty, then do nothing
+  if(!command_buffer_size)
+    return;
+  //Our buffer is not empty, so send the byte and let our interrupt handler know that we
+  //are expecting an async interrupt
+  awaiting_async_command = true;
+  outb(PS2_DATA_REG, command_buffer[command_buffer_head].cmd);
+  return;
+}
+
+//Attempts to queue an asynchronus keyboard command.
+//Returns true if there was an error
+bool queue_async_cmd_byte(uint8_t cmd, uint8_t data_size){
+  //Fuck off, we're full :^)
+  if(command_buffer_size == MAX_COMMAND_BUFFER_SIZE)
+    return true;
+  
+  //Add our command to the end of the buffer queue.
+  command_buffer[command_buffer_tail].cmd = cmd;
+  command_buffer[command_buffer_tail].tries = 0;
+  command_buffer[command_buffer_tail].data_size = data_size;
+  //Move the tail of the queue back
+  ++command_buffer_size;
+  command_buffer_tail = (command_buffer_tail + 1) % MAX_COMMAND_BUFFER_SIZE;
+  
+  //If we're not already waiting for an async cmd, then send this one right off
+  if(!awaiting_async_command)
+    send_next_async_cmd();
+  
+  return false;
+}
+
+
+//Tries to queue up an asynchronus command with data
+//Returns true if one or both could not be fitted in the buffer
+bool queue_async_cmd_bytes(uint8_t cmd, uint8_t data, uint8_t data_size){
+  if((command_buffer_size + 2) >= MAX_COMMAND_BUFFER_SIZE)
+    return true;
+  queue_async_cmd_byte(cmd, 1);
+  queue_async_cmd_byte(data, data_size);
+  return false;
+}
+
+kbd_response_t recv_async_cmd(){
+  kbd_response_t toreturn = {false, RESEND};
+  //We received our interrupt, now read what we got
+  uint8_t response = inb(PS2_DATA_REG);
+  //If we must resend, increment the number of tries for the current datum
+  if(response == RESEND){
+    ++(command_buffer[command_buffer_head].tries);
+    //If we failed too many times.  Give up on the current command
+    if(command_buffer[command_buffer_head].tries >= MAX_RESEND_ATTEMPTS){
+      --command_buffer_size;
+      command_buffer_head = (command_buffer_head + 1) % MAX_COMMAND_BUFFER_SIZE;
+      awaiting_async_command = false;
+      send_next_async_cmd();
+      toreturn.send_error = true;
+    }
+    return toreturn;
+  }
+  //We got a response, take note of it.
+  //Decrement the amount of data the we still need to read
+  toreturn.response_code = response;
+  --(command_buffer[command_buffer_head].data_size);
+  //If we have no data left to read, then we can stop waiting for this command
+  if(!command_buffer[command_buffer_head].data_size){
+    --command_buffer_size;
+    command_buffer_head = (command_buffer_head + 1) % MAX_COMMAND_BUFFER_SIZE;
+    awaiting_async_command = false;
+    send_next_async_cmd();
+  }
+  return toreturn;
+}
+
 void set_lock_led(uint8_t lock){
-  led_states |= lock;
-  send_command(SET_LEDS, led_states);
+  if(!initialized)
+    return;
+  led_states |= (1 << (lock % 3));
+  queue_async_cmd_bytes(SET_LEDS, led_states, 1);
 }
 
 void unset_lock_led(uint8_t lock){
-  led_states &= (~lock);
-  send_command(SET_LEDS, led_states);
+  if(!initialized)
+    return;
+  led_states &= ~(1 << (lock % 3));
+  queue_async_cmd_bytes(SET_LEDS, led_states, 1);
 }
 
 void toggle_lock_led(uint8_t lock){
-  led_states ^= lock;
-  send_command(SET_LEDS, led_states);
+  if(!initialized){
+    return;
+  }
+  led_states ^= (1 << (lock % 3));
+  queue_async_cmd_bytes(SET_LEDS, led_states, 1);
 }
 
 bool get_lock_led(uint8_t lock){
@@ -304,10 +404,17 @@ bool get_lock_led(uint8_t lock){
 }
 
 void handle_keyboard_interrupt(){
+  
   if(!initialized){
     received_interrupt = true;
     return;
   }
+
+  if(awaiting_async_command){
+    recv_async_cmd();
+    return;
+  }
   
-  printf("Pressed a key %i ", (int) inb(0x60));
+  printf("Scan code %i ", (int) inb(0x60));
+  return;
 }
