@@ -65,10 +65,13 @@ typedef struct async_cmd{
 
 static uint8_t led_states;
 
+volatile bool scanning_is_enabled;
+
 static async_cmd_t command_buffer[MAX_COMMAND_BUFFER_SIZE];
 static uint8_t command_buffer_head;
 static uint8_t command_buffer_tail;
 static uint8_t command_buffer_size;
+static uint8_t last_answered_cmd;
 
 volatile bool awaiting_async_command;
 
@@ -242,6 +245,8 @@ int initialize_ps2_keyboard(){
   response = send_command_byte(DISABLE_SCANNING);
   if(response.send_error)
     return -1;
+
+  scanning_is_enabled = false;
   
   //Read from the ps2 controller's config byte
   outb(PS2_STATUS_CMD_REG, GET_CONFIG_BYTE);
@@ -294,9 +299,12 @@ int initialize_ps2_keyboard(){
   if(response.send_error)
     return 5;
 
+  scanning_is_enabled = true;
+
   command_buffer_head = 0;
   command_buffer_tail = 0;
   command_buffer_size = 0;
+  last_answered_cmd = 0;
   awaiting_async_command = false;
   initialized = true;
   return 0;
@@ -335,7 +343,6 @@ bool queue_async_cmd_byte(uint8_t cmd, uint8_t data_size){
   return false;
 }
 
-
 //Tries to queue up an asynchronus command with data
 //Returns true if one or both could not be fitted in the buffer
 bool queue_async_cmd_bytes(uint8_t cmd, uint8_t data, uint8_t data_size){
@@ -347,6 +354,10 @@ bool queue_async_cmd_bytes(uint8_t cmd, uint8_t data, uint8_t data_size){
 }
 
 kbd_response_t recv_async_cmd(){
+
+  //Keep track of the command that this response belongs to
+  last_answered_cmd = command_buffer_head;
+  
   kbd_response_t toreturn = {false, RESEND};
   //We received our interrupt, now read what we got
   uint8_t response = inb(PS2_DATA_REG);
@@ -392,15 +403,32 @@ void unset_lock_led(uint8_t lock){
 }
 
 void toggle_lock_led(uint8_t lock){
-  if(!initialized){
+  if(!initialized)
     return;
-  }
   led_states ^= (1 << (lock % 3));
   queue_async_cmd_bytes(SET_LEDS, led_states, 1);
 }
 
 bool get_lock_led(uint8_t lock){
-  return (led_states & (1 << (lock % 3));
+  return (led_states & (1 << (lock % 3)));
+}
+    
+void disable_key_scanning(){
+  if(!scanning_is_enabled || !initialized)
+    return;
+  queue_async_cmd_byte(DISABLE_SCANNING, 1);
+  return;
+}
+
+void enable_key_scanning(){
+  if(scanning_is_enabled || !initialized)
+    return;
+  queue_async_cmd_byte(ENABLE_SCANNING, 1);
+  return;
+}
+
+bool key_scanning_is_enabled(){
+  return scanning_is_enabled;
 }
 
 void handle_keyboard_interrupt(){
@@ -411,7 +439,22 @@ void handle_keyboard_interrupt(){
   }
 
   if(awaiting_async_command){
-    recv_async_cmd();
+    kbd_response_t resp = recv_async_cmd();
+    //We've received the response.  Now get the command it belonged to,
+    //and do different things based off of what that command was
+    async_cmd_t command = command_buffer[last_answered_cmd];
+    switch(command.cmd){
+    case DISABLE_SCANNING:
+      if(resp.response_code == ACK)
+	scanning_is_enabled = false;
+      break;
+    case ENABLE_SCANNING:
+      if(resp.response_code == ACK)
+	scanning_is_enabled = true;
+      break;
+    default:
+      break;
+    }
     return;
   }
   

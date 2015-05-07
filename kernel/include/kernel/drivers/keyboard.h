@@ -39,6 +39,10 @@ void unset_lock_led(uint8_t lock);
 void toggle_lock_led(uint8_t lock);
 bool get_lock_led(uint8_t lock);
 
+void disable_key_scanning();
+void enable_key_scanning();
+bool key_scanning_is_enabled();
+
 int initialize_ps2_keyboard();
 
 void handle_keyboard_interrupt();
