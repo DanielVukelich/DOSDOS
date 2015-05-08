@@ -17,8 +17,6 @@
 
 #include <kernel/drivers/keyboard.h>
 
-#include <stdio.h>
-
 //Commands you can send
 #define SET_LEDS             0xED
 #define GET_SET_SCAN_CODE    0xF0
@@ -269,8 +267,8 @@ int initialize_ps2_keyboard(){
   //Run the keyboard self test
   response = run_self_test();
   if(response.send_error || (response.response_code != SELF_TEST_PASS))
-    return 1;  
-
+    return 1;
+  
   //Now set it to use scan code mode 2
   //response = send_command(GET_SET_SCAN_CODE, SCAN_CODE_2);
   response = send_command_byte(GET_SET_SCAN_CODE);
@@ -457,7 +455,10 @@ void handle_keyboard_interrupt(){
     }
     return;
   }
+
+  //We'll eventually deal with the scancode, but for the moment,
+  //just read it and throw it away
+  inb(PS2_DATA_REG);
   
-  printf("Scan code %i ", (int) inb(0x60));
   return;
 }

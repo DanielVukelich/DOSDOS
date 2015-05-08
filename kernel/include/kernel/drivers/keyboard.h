@@ -22,6 +22,8 @@
 
 #include <kernel/utils/dos.h>
 #include <kernel/low_level/isr.h>
+#include <kernel/mem/kmalloc.h>
+#include <kernel/drivers/key_codes.h>
 
 typedef struct kbd_response{
   //Whether or not there was an error sending
