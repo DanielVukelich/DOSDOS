@@ -219,8 +219,6 @@ void* kmalloc(size_t size){
 
   //We don't have enough memory
   //OH SHIT
-  printf("Out of RAM");
-  while(1){};
   return NULL;
 }
 
