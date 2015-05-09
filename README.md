@@ -22,9 +22,10 @@ DOSDOS currently supports the following functionality:
 ## Farther Future Plans:
 These are the very long term plans for DOSDOS are:
 * Add a filesystem
+* EHCI USB (USB 2.0) support
 * Write HDD drivers
 * Have DOSDOS run on a HDD with persistence
-* Build various open-source programs to run on DOSDOS
+* Build various libre programs to run on DOSDOS
 * Have DOSDOS be able to compile itself from source
 
 ## Building:
