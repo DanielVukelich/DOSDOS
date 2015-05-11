@@ -15,39 +15,26 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _KERNEL_KEYBOARD_H
-#define _KERNEL_KEYBOARD_H
+#ifndef _KERNEL_ISR_H
+#define _KERNEL_ISR_H
 
+#include <stdio.h>
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 
+#include <kernel/display/tty.h>
+#include <kernel/interrupts/pic.h>
 #include <kernel/utils/dos.h>
-#include <kernel/low_level/isr.h>
-#include <kernel/mem/kmalloc.h>
-#include <kernel/drivers/key_codes.h>
+#include <kernel/drivers/ps2_keyboard/ps2_keyboard.h>
 
-typedef struct kbd_response{
-  //Whether or not there was an error sending
-  bool send_error;
-  //The response code from the keyboard's data register
-  uint8_t response_code;
-}kbd_response_t;
+typedef struct registers{
+  uint32_t gs, fs, es, ds;
+  uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+  uint32_t int_no, err_code;
+  uint32_t eip, cs, eflags, useresp, ss;
+}registers_t;
 
-//Valid choices for lock are as follows:
-//0: Scroll lock
-//1: Num lock
-//2: Caps lock
-void set_lock_led(uint8_t lock);
-void unset_lock_led(uint8_t lock);
-void toggle_lock_led(uint8_t lock);
-bool get_lock_led(uint8_t lock);
-
-void disable_key_scanning();
-void enable_key_scanning();
-bool key_scanning_is_enabled();
-
-int initialize_ps2_keyboard();
-
-void handle_keyboard_interrupt();
-
+void isr_handler(registers_t* regs);
 
 #endif

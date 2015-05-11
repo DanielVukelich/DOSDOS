@@ -15,7 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <kernel/drivers/keyboard.h>
+#include <kernel/drivers/ps2_keyboard/ps2_keyboard.h>
 
 //Commands you can send
 #define SET_LEDS             0xED

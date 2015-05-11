@@ -14,7 +14,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/low_level/isr.h>
+#include <kernel/interrupts/isr.h>
 
 static bool isFatal(uint32_t interrupt){
   return (interrupt != 99);

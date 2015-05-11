@@ -15,7 +15,7 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <kernel/drivers/key_codes.h>
+#include <kernel/services/keyboard_event/key_codes.h>
 
 //Our Function keys
 const uint16_t F1_PRES = 0;

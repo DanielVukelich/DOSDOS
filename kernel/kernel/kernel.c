@@ -27,11 +27,11 @@
 #include <kernel/utils/multiboot.h>
 #include <kernel/mem/physmm.h>
 #include <kernel/tables/desc_tables.h>
-#include <kernel/low_level/isr.h>
-#include <kernel/low_level/pic.h>
+#include <kernel/interrupts/isr.h>
+#include <kernel/interrupts/pic.h>
 #include <kernel/mem/paging.h>
 #include <kernel/mem/kmalloc.h>
-#include <kernel/drivers/keyboard.h>
+#include <kernel/drivers/ps2_keyboard/ps2_keyboard.h>
 
 extern uint32_t endkernel;
 extern uint32_t startkernel;

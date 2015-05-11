@@ -45,7 +45,7 @@
 //If we get an IRQ15, reading the pic_get_isr, we should find bit 15 is set
 #define EXPECTED_IRQ15_PIC2_ISR 0x8000
 
-#include <kernel/low_level/pic.h>
+#include <kernel/interrupts/pic.h>
 
 static int pic1_mapstart = 0;
 static int pic2_mapstart = 8;
