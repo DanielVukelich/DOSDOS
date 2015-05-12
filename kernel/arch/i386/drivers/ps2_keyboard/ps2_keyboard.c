@@ -456,9 +456,29 @@ void handle_keyboard_interrupt(){
     return;
   }
 
-  //We'll eventually deal with the scancode, but for the moment,
-  //just read it and throw it away
-  inb(PS2_DATA_REG);
+  //Read the scancode
+  uint8_t scancode = inb(PS2_DATA_REG);
+
+  //Register the byte with the scancode fsm
+  //and check if it completes a scancode
+  if(register_scanbyte(scancode)){
+    //Pass the key event to the keyboard event manager
+    uint16_t keycode = get_last_ps2_keycode();
+    register_key_event(keycode);
+
+    //If we pressed a lock key, turn on the LED
+    switch(keycode){
+    case CPSLCK_PRES:
+      toggle_lock_led(2);
+      break;
+    case NUMLCK_PRES:
+      toggle_lock_led(1);
+      break;
+    case SCROLLCK_PRES:
+      toggle_lock_led(0);
+      break;
+    }
+  }
   
   return;
 }

@@ -23,6 +23,8 @@
 #include <kernel/utils/dos.h>
 #include <kernel/interrupts/isr.h>
 #include <kernel/mem/kmalloc.h>
+#include <kernel/drivers/ps2_keyboard/ps2_scancode_fsm.h>
+#include <kernel/services/keyboard_event/kbd_event_mgr.h>
 #include <kernel/services/keyboard_event/key_codes.h>
 
 typedef struct kbd_response{
@@ -48,6 +50,5 @@ bool key_scanning_is_enabled();
 int initialize_ps2_keyboard();
 
 void handle_keyboard_interrupt();
-
 
 #endif
