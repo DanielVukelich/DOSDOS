@@ -10,12 +10,12 @@ DOSDOS currently supports the following functionality:
 * Physcial Memory Management
 * Paging
 * Virtual Memory Management
+* Keyboard drivers
 * A minimal subset of the C standard library
 
 ## Immediate Future Plans
  The next steps in plan for DOSDOS include:
  * Streamlining Virtual Memory management
- * Writing keyboard drivers
  * Expanding the C standard library to the point where meaningful programs can be written with it
  * Basic CLI
 
