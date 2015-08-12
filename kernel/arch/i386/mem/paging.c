@@ -15,18 +15,13 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
 #include <kernel/mem/paging.h>
 
 extern void loadPageDirectory(uint32_t*);
 extern void enablePaging();
 
 //This block exists so that we can manipulate tables of memory that we shouldn't be allowed to access
-uint32_t helper_block[1024] __attribute__((aligned(4096)));
-
-uint32_t* last_dirptr;
-
-uint32_t* emblock_ptr;
+static uint32_t helper_block[1024] __attribute__((aligned(4096)));
 
 //Keep track of where we've been consecutively adding blocks
 static uint32_t last_entered_Kblock;
@@ -38,8 +33,6 @@ void init_pageDir(uint32_t* dirptr){
   for(int i = 0; i < 1024; ++i){
     dirptr[i] = 0;
   }
-
-  last_dirptr = dirptr;
   
 }
 
@@ -49,6 +42,10 @@ void init_KernelPT(uint32_t* tabptr){
     tabptr[i] = 0;
   }
   
+}
+
+inline size_t get_last_entered_Kernel_block(){
+  return (size_t) last_entered_Kblock;
 }
 
 void insert_Kernel_PTValue(uint32_t* tabptr, uint32_t tabindex, uint32_t physical_block){
@@ -70,10 +67,6 @@ void insert_KernelPTentry(uint32_t* dirptr, uint32_t* tabptr, uint32_t dirindex)
   //Read+Write
   //Present
   dirptr[dirindex] = ( (uint32_t) tabptr ) | 3;
-}
-
-uint32_t* get_dirptr(){
-  return  last_dirptr;
 }
 
 //Attempts to get the page table at Page Directory index DirIndex

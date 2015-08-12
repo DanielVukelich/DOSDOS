@@ -21,7 +21,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 
 #include <kernel/mem/physmm.h>
 
@@ -31,9 +30,9 @@ void init_KernelPT(uint32_t* tabptr);
 void init_pageDir(uint32_t* dirptr);
 void insert_KernelPTentry(uint32_t* dirptr, uint32_t* tabptr, uint32_t dirindex);
 void insert_Kernel_PTValue(uint32_t* tabptr, uint32_t tabindex, uint32_t physical_block);
-bool register_block_for_kernel(uint32_t* dirptr, size_t physical, size_t mapto, bool override_current);
+bool register_block_for_kernel(uint32_t* dirptr, size_t physical_block, size_t mapto_block, bool override_current);
 
-uint32_t* get_dirptr();
+size_t get_last_entered_Kernel_block();
 
 inline uint32_t block_to_DirIndex(const size_t block){
   return (block / 1024);
