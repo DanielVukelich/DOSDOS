@@ -36,8 +36,12 @@
 extern uint32_t endkernel;
 extern uint32_t startkernel;
 
-static const void* END_OF_KERNEL = (void*) (&endkernel + 2);
-static const void* START_OF_KERNEL = (void*) (&startkernel);
+//For all intents and purposes, pretend that the kernel fills the entire first 4MiB
+static const void* START_OF_KERNEL = (void *) 0x0;
+static const void* END_OF_KERNEL = (void *)0x3FFFFF;
+
+static const void* REAL_END_OF_KERNEL = (void*) (&endkernel + 2);
+static const void* REAL_START_OF_KERNEL = (void*) (&startkernel);
 static uint32_t* physmm_bitmap;
 static size_t physmm_bitmap_size;
 
@@ -49,8 +53,13 @@ void kernel_early(void)
 void kernel_main(multiboot_info_t* mbt)
 {
   cursor_hide();
-  printf("Kernel loaded from %p to %p\n\n", START_OF_KERNEL, END_OF_KERNEL);
+  printf("Kernel loaded from %p to %p\n\n", REAL_START_OF_KERNEL, REAL_END_OF_KERNEL);
 
+  if(REAL_END_OF_KERNEL > END_OF_KERNEL){
+    printf("\nKernel size is greater than 4MiB!\n");
+    abort();
+  }
+  
   printf("Initializing PIC Interrupts... ");
   PIC_remap(0x20, 0x28);
   printf("Done\n");
@@ -78,8 +87,7 @@ void kernel_main(multiboot_info_t* mbt)
 
   printf("Enabling Paging... ");
   uint32_t* PDirTabl = physmm_alloc_block();
-  uint32_t* PTabl = physmm_alloc_block();  
-  init_paging(PDirTabl, PTabl, START_OF_KERNEL, END_OF_KERNEL);
+  init_paging(PDirTabl, START_OF_KERNEL);
   printf("Done\n");
 
   printf("Initializing Keyboard Driver... ");
