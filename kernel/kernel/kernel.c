@@ -65,12 +65,13 @@ void kernel_main(multiboot_info_t* mbt)
   printf("Done\n");
   
   printf("Initializing Physical Memory Manager... ");
-  physmm_bitmap = (uint32_t*) END_OF_KERNEL;
-  physmm_bitmap_size = init_mmap(mbt, physmm_bitmap, START_OF_KERNEL, END_OF_KERNEL);
+  physmm_bitmap = (uint32_t*) REAL_END_OF_KERNEL + 2;
+  physmm_bitmap_size = init_mmap(mbt, physmm_bitmap, START_OF_KERNEL, REAL_END_OF_KERNEL);
   if(physmm_bitmap_size == 0){
     printf("Error initializing Physical Memory Manager\n");
       abort();
   }
+  
   printf("Done (%d pages)\n", (unsigned int)physmm_freeblock_count());
 
   printf("Initializing GDT... ");
@@ -118,6 +119,18 @@ void kernel_main(multiboot_info_t* mbt)
     printf("Unknown Error\n");
     break;
   }
+
+    printf("Begin test");
+  for(int i = 0; i < 1025; ++i){
+    void* test = physmm_alloc_block();
+    if(!register_block_for_kernel(PDirTabl, addr_to_block(test), true, false)){
+      printf("\nError at i = %i", i);
+    }else{
+      //printf("\n%i", i);
+    }
+  }
+
+  printf("Done");
   
   while(1){};
   

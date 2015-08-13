@@ -30,7 +30,8 @@ void init_KernelPT(uint32_t* tabptr);
 void init_pageDir(uint32_t* dirptr);
 void insert_KernelPTentry(uint32_t* dirptr, uint32_t* tabptr, uint32_t dirindex);
 void insert_Kernel_PTValue(uint32_t* tabptr, uint32_t tabindex, uint32_t physical_block);
-bool register_block_for_kernel(uint32_t* dirptr, size_t physical_block, size_t mapto_block, bool override_current);
+void handle_page_fault(uint32_t errcode);
+bool register_block_for_kernel(uint32_t* dirptr, size_t physical_block, bool isForMem, bool override_current);
 
 size_t get_last_entered_Kernel_block();
 

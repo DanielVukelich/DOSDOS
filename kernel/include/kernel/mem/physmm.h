@@ -53,4 +53,11 @@ bool mmap_checkstatus(int bit);
 
 uint32_t mmap_get_max_blocks();
 
+inline size_t round_size_to_blocks(size_t siz){
+  size_t blocks = siz / PHYSMM_BLOCK_SIZE;
+  if(siz % 4096)
+    ++blocks;
+  return blocks;
+}
+
 #endif

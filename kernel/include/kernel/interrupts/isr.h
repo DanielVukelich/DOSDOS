@@ -27,6 +27,7 @@
 #include <kernel/interrupts/pic.h>
 #include <kernel/utils/dos.h>
 #include <kernel/drivers/ps2_keyboard/ps2_keyboard.h>
+#include <kernel/mem/paging.h>
 
 typedef struct registers{
   uint32_t gs, fs, es, ds;

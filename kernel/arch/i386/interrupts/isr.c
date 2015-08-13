@@ -17,7 +17,7 @@
 #include <kernel/interrupts/isr.h>
 
 static bool isFatal(uint32_t interrupt){
-  return (interrupt != 99);
+  return (interrupt != 99 && interrupt != 14);
 }
 
 static char* interrupt_name(uint32_t intr){
@@ -87,23 +87,32 @@ void isr_handler(registers_t* regs)
     
   }
 
-  //Handle our IRQs
-  //interrupt numbers 0-31 are reserved by intel, so subtract 32
-  //to get the isa irq code.  32 is an arbitary number decided in the
-  //PIC initialization code
-  int isa_irq = (regs->int_no - 32);
-  
-  switch(isa_irq){
-  case 0:
-    //Programmable interval timer interrupt
-    break;
-  case 1:
-    //Keyboard interrupt
-    handle_keyboard_interrupt();
-    break;
+  if(regs->int_no >= 32){
+    //Handle our IRQs
+    //interrupt numbers 0-31 are reserved by intel, so subtract 32
+    //to get the isa irq code.  32 is an arbitary number decided in the
+    //PIC initialization code
+    int isa_irq = (regs->int_no - 32);
+    
+    switch(isa_irq){
+    case 0:
+      //Programmable interval timer interrupt
+      break;
+    case 1:
+      //Keyboard interrupt
+      handle_keyboard_interrupt();
+      break;
+    }
+    
+    PIC_sendEOI(regs->int_no);
+  }else{
+    //It is an exception we can (and should) handle
+    switch(regs->int_no){
+    case 14:
+      handle_page_fault(regs->err_code);
+      break;
+    }
   }
-  
-  PIC_sendEOI(regs->int_no);
   
   return;
 }

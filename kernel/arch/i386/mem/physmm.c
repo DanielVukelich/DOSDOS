@@ -109,8 +109,10 @@ size_t init_mmap(multiboot_info_t* mbt, uint32_t* physmm_bitmap, const void* STA
   //Deinit our kernel's space so that nobody tries to overwrite it
   size_t kernelsize_rounded = (END_OF_KERNEL - START_OF_KERNEL);
   kernelsize_rounded += (4096 - ((size_t) END_OF_KERNEL % 4096));
+  size_t mmapsize_round = mmap_size + (4096 - (mmap_size % 4096));
 
   physmm_deinit_region(START_OF_KERNEL, kernelsize_rounded);
+  physmm_deinit_region(END_OF_KERNEL, mmapsize_round);
   
   return mmap_size;
   
@@ -136,9 +138,10 @@ uint32_t physmm_freeblock_count(){
 }
 
 void* physmm_alloc_block(){
-
-  if(physmm_freeblock_count() <= 0)
+  
+  if(physmm_freeblock_count() <= 0){
     return 0;
+  }
 
   int pageframe = mmap_first_free();
 
@@ -146,7 +149,7 @@ void* physmm_alloc_block(){
     return 0;
   }
 
-  mmap_bitset(pageframe);
+  mmap_bitset(pageframe);  
 
   uint32_t address = (pageframe * PHYSMM_BLOCK_SIZE);
 
@@ -280,3 +283,5 @@ int mmap_first_free_s(size_t size){
 inline uint32_t mmap_get_max_size_blocks(){
   return mem_full_size_blocks;
 }
+
+
