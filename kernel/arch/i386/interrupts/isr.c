@@ -17,8 +17,10 @@
 #include <kernel/interrupts/isr.h>
 
 static bool isFatal(uint32_t interrupt){
-  return (interrupt != 99 && interrupt != 14);
+  return (interrupt != 99 && interrupt != 14 && interrupt != 3);
 }
+
+static int exception_depth = 0;
 
 static char* interrupt_name(uint32_t intr){
   switch(intr){
@@ -71,6 +73,12 @@ static char* interrupt_name(uint32_t intr){
 
 void isr_handler(registers_t* regs)
 {
+
+  if(exception_depth++ >= 3){
+    printf("Exception depth exceeded 3");
+    while(1);
+  }
+  
   if((regs->int_no < 32) && (isFatal(regs->int_no))){
 
     terminal_bluescreen();
@@ -113,7 +121,8 @@ void isr_handler(registers_t* regs)
       break;
     }
   }
-  
+
+  exception_depth = 0;
   return;
 }
 

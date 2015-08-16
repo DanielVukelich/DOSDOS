@@ -1,7 +1,7 @@
 HOST?=$(shell ../default-host.sh)
 HOSTARCH:=$(shell ../target-triplet-to-arch.sh $(HOST))
 
-CFLAGS?=-O2 -g
+CFLAGS?=-O2 -g3
 CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
@@ -12,7 +12,7 @@ EXEC_PREFIX?=$(PREFIX)
 BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
-CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra
+CFLAGS:=$(CFLAGS) -ffreestanding -fbuiltin -Wall -Wextra 
 CPPFLAGS:=$(CPPFLAGS) -D__is_dosdos_kernel -Iinclude
 LDFLAGS:=$(LDFLAGS)
 LIBS:=$(LIBS) -nostdlib -lk -lgcc

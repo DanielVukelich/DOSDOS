@@ -15,6 +15,8 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//Some of the code in this file is Copyright James Molloy, 2008
+
 #include <kernel/tables/desc_tables.h>
 
 

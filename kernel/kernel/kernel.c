@@ -91,8 +91,13 @@ void kernel_main(multiboot_info_t* mbt)
   init_paging(PDirTabl, START_OF_KERNEL);
   printf("Done\n");
 
+  int* i = (int*) 0xC0000000;
+  printf("\n@%i , %p@\n",(int) i[0], (void*) i);
+
+  
   printf("Initializing Keyboard Driver... ");
-  int kbd_drv_res = initialize_ps2_keyboard();
+  int kbd_drv_res = 0;
+  initialize_ps2_keyboard();
   switch(kbd_drv_res){
   case -1:
     printf("Failed to configure keyboard controller");
@@ -120,14 +125,11 @@ void kernel_main(multiboot_info_t* mbt)
     break;
   }
 
-    printf("Begin test");
-  for(int i = 0; i < 1025; ++i){
-    void* test = physmm_alloc_block();
-    if(!register_block_for_kernel(PDirTabl, addr_to_block(test), true, false)){
-      printf("\nError at i = %i", i);
-    }else{
-      //printf("\n%i", i);
-    }
+  printf("Begin test\n");
+  //void* addr = (void*) 0xC0000000;
+  int j = 0;
+  for(i = (int*) 0xC0000080; i < (int*)0xD0002000; i += 256){
+    printf("\n@%i , %p , %i@\n",(int) i[0], (void*) i, j++);
   }
 
   printf("Done");

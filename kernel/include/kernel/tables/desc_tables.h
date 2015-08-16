@@ -15,6 +15,9 @@
 *    along with DOSDOS.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//   Some of the code in this file is Copyright James Molloy, 2008.
+//   It has been used with his permission for modification and redistribution
+
 #ifndef _KERNEL_DESC_TABLES
 #define _KERNEL_DESC_TABLES
 
