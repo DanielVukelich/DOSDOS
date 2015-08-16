@@ -16,7 +16,6 @@
 */
 
 #include <kernel/mem/paging.h>
-#include <kernel/utils/dos.h>
 
 extern void loadPageDirectory(uint32_t*);
 extern void enablePaging();
@@ -162,28 +161,18 @@ void handle_page_fault(uint32_t errcode){
   
   
   if(!isPresent){
-
-    printf("New table\n");
-  if(cr2 == oldcr2){
-    printf("Page fault caught trying to map to the same address as before!\n");
-    while(1);
-  }
     
     //We need to put a new block in the page directory
     uint32_t* newblock = physmm_alloc_block();
 
     //Point to it with our helper block so we can use it
     insert_Kernel_PTValue(helper_block, HELPER_BLOCK_INSERT_INDEX + helper_insert, addr_to_block_32((void*)newblock));
-    //invlpg( (void*) index_to_virtual(HELPER_DIR_INDEX, HELPER_BLOCK_INSERT_INDEX + helper_insert));
         
     //Now we can zero it (Initialize it from the address it is mapped to in the helper block)
     init_KernelPT(index_to_virtual(HELPER_DIR_INDEX, HELPER_BLOCK_INSERT_INDEX + helper_insert) );
-    //printf("Zeroed out the table\t");
     
     //Now put this new page table in the page directory
     insert_KernelPTentry(PageDir_Ptr, newblock, pagedir_entry);
-    //uint32_t* val = (uint32_t*)((uint32_t)PageDir_Ptr | pagedir_entry);
-    //printf("PT entry written to %p\n", (void*)val);
 
     ++helper_insert;
     if(helper_insert > (int)MAX_TABLE_ENTRY){
@@ -193,7 +182,6 @@ void handle_page_fault(uint32_t errcode){
 
     //And now stop pointing to it from helper block
     loadPageDirectory(PageDir_Ptr);
-    printf("Mapped %p to %p, h insert = %i\n", (void*) newblock, (void*) cr2, helper_insert);
   }
 
   uint32_t* tabptr = get_pagetable_ptr(PageDir_Ptr, pagedir_entry);    
@@ -210,6 +198,5 @@ void handle_page_fault(uint32_t errcode){
 
   invlpg((void*) cr2);
   oldcr2 = cr2;
-  //while(1);
 }
 

@@ -90,10 +90,6 @@ void kernel_main(multiboot_info_t* mbt)
   uint32_t* PDirTabl = physmm_alloc_block();
   init_paging(PDirTabl, START_OF_KERNEL);
   printf("Done\n");
-
-  int* i = (int*) 0xC0000000;
-  printf("\n@%i , %p@\n",(int) i[0], (void*) i);
-
   
   printf("Initializing Keyboard Driver... ");
   int kbd_drv_res = 0;
@@ -124,15 +120,6 @@ void kernel_main(multiboot_info_t* mbt)
     printf("Unknown Error\n");
     break;
   }
-
-  printf("Begin test\n");
-  //void* addr = (void*) 0xC0000000;
-  int j = 0;
-  for(i = (int*) 0xC0000080; i < (int*)0xD0002000; i += 256){
-    printf("\n@%i , %p , %i@\n",(int) i[0], (void*) i, j++);
-  }
-
-  printf("Done");
   
   while(1){};
   
