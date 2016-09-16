@@ -1,5 +1,5 @@
 #!/bin/sh
 #fullbuild
-build.sh
-iso.sh
-qemu.sh
+./build.sh
+./iso.sh
+./qemu.sh
